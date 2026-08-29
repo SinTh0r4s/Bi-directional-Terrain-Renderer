@@ -1,3 +1,5 @@
+import math
+
 from pyglm import glm
 
 
@@ -65,7 +67,6 @@ class Camera:
         self.position = start_position
         self.yaw, self.pitch = _initial_yaw_and_pitch(start_position, look_at)
 
-        self._forward_speed = 0.1
         self._move_speed = 3.0
         self._rotation_speed = 0.15
 
@@ -73,14 +74,13 @@ class Camera:
         self._right_active = False
         self._up_active = False
         self._down_active = False
+        self._forward_active = False
+        self._backward_active = False
 
     def rotate(self, horizontal: float, vertical: float) -> None:
         self.yaw += horizontal * self._rotation_speed
         self.pitch += -vertical * self._rotation_speed
         self.pitch = glm.clamp(self.pitch, -89.0, 89.0)
-
-    def forward(self, delta: float) -> None:
-        self.position += self._forward_vector() * delta * self._forward_speed
 
     def start_left(self) -> None:
         self._left_active = True
@@ -106,6 +106,18 @@ class Camera:
     def stop_down(self) -> None:
         self._down_active = False
 
+    def start_forward(self) -> None:
+        self._forward_active = True
+
+    def stop_forward(self) -> None:
+        self._forward_active = False
+
+    def start_backward(self) -> None:
+        self._backward_active = True
+
+    def stop_backward(self) -> None:
+        self._backward_active = False
+
     def on_update(self, delta_time: float) -> None:
         forward = self._forward_vector()
         right = self._right_vector()
@@ -120,6 +132,11 @@ class Camera:
             self.position += up * self._move_speed * delta_time
         if self._down_active:
             self.position += -up * self._move_speed * delta_time
+
+        if self._forward_active:
+            self.position += forward * self._move_speed * delta_time
+        if self._backward_active:
+            self.position += -forward * self._move_speed * delta_time
 
     def _forward_vector(self) -> glm.vec3:
         yaw = glm.radians(self.yaw)
@@ -144,6 +161,9 @@ class Camera:
             self.position + self._forward_vector(),
             glm.vec3(0.0, 1.0, 0.0),
         )
+
+    def proj_matrix(self) -> glm.mat4:
+        return glm.perspective(math.radians(45.0), 4.0 / 3.0, 1.0, 25_000.0)
 
     def is_visible(self, aabb_min: glm.vec3, aabb_max: glm.vec3) -> bool:
         planes = _extract_frustum_planes(self.view_matrix())
