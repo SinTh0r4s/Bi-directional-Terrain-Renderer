@@ -67,7 +67,7 @@ class Camera:
         self.position = start_position
         self.yaw, self.pitch = _initial_yaw_and_pitch(start_position, look_at)
 
-        self._move_speed = 3.0
+        self._move_speed = 10.0
         self._rotation_speed = 0.15
 
         self._left_active = False
