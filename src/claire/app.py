@@ -6,11 +6,12 @@ import pyglm.glm as glm
 
 import moderngl
 from PySide6.QtCore import QTimer, Qt, QPointF
-from PySide6.QtGui import QMouseEvent, QWheelEvent, QKeyEvent
+from PySide6.QtGui import QMouseEvent, QKeyEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
 from claire.camera import Camera
 from claire.terrain import Terrain
+from claire.terrain2.dem import DEM
 
 _KEY_LEFT = Qt.Key.Key_A
 _KEY_RIGHT = Qt.Key.Key_D
@@ -23,7 +24,7 @@ class App(QOpenGLWidget):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._ctx: moderngl.Context
-        self._dem = Terrain(Path(__file__).parent / "DSM_1m_UTM11N.tif")
+        self._dem = DEM(Path(__file__).parent / "DSM_1m_UTM11N.tif")
         self._camera = Camera(start_position=glm.vec3(3.0, 1.0, 3.0), look_at=glm.vec3(0.0, 0.0, 0.0))
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update)
