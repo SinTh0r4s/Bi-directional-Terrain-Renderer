@@ -2,7 +2,7 @@ import moderngl
 from pyglm import glm
 
 from claire.camera import Camera
-from claire.terrain3.chunk_gpu_data import ChunkGpuData
+from claire.terrain.chunk_gpu_data import ChunkGpuData
 
 
 def _render_lod_at(exponent: int, distance: float) -> bool:

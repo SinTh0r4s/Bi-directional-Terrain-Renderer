@@ -7,7 +7,7 @@ import numpy as np
 from pyglm import glm
 
 from claire.aabb import AABB
-from claire.terrain3.chunk_cpu_data import ChunkCpuData
+from claire.terrain.chunk_cpu_data import ChunkCpuData
 
 
 @dataclass

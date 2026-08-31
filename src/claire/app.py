@@ -10,7 +10,7 @@ from PySide6.QtGui import QMouseEvent, QKeyEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
 from claire.camera import Camera
-from claire.terrain3.dem import DEM
+from claire.terrain.dem import DEM
 
 _KEY_LEFT = Qt.Key.Key_A
 _KEY_RIGHT = Qt.Key.Key_D

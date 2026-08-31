@@ -1,6 +1,6 @@
 import math
 
-from claire.terrain3.chunk import Chunk
+from claire.terrain.chunk import Chunk
 from pathlib import Path
 from typing import Final
 
@@ -9,8 +9,8 @@ import moderngl
 from skimage.io import imread
 
 from claire.camera import Camera
-from claire.terrain3.chunk_cpu_data import load_chunks_into_cpu
-from claire.terrain3.chunk_gpu_data import transfer_chunks_to_gpu
+from claire.terrain.chunk_cpu_data import load_chunks_into_cpu
+from claire.terrain.chunk_gpu_data import transfer_chunks_to_gpu
 
 _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "vertex_shader.glsl"
 _FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "fragment_shader.glsl"
