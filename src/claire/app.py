@@ -10,8 +10,7 @@ from PySide6.QtGui import QMouseEvent, QKeyEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 
 from claire.camera import Camera
-from claire.terrain import Terrain
-from claire.terrain2.dem import DEM
+from claire.terrain3.dem import DEM
 
 _KEY_LEFT = Qt.Key.Key_A
 _KEY_RIGHT = Qt.Key.Key_D
@@ -21,10 +20,11 @@ _KEY_FORWARD = Qt.Key.Key_W
 _KEY_BACKWARD = Qt.Key.Key_S
 
 class App(QOpenGLWidget):
+    _ctx: moderngl.Context
+    _dem: DEM
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._ctx: moderngl.Context
-        self._dem = DEM(Path(__file__).parent / "DSM_1m_UTM11N.tif")
         self._camera = Camera(start_position=glm.vec3(3.0, 1.0, 3.0), look_at=glm.vec3(0.0, 0.0, 0.0))
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update)
@@ -82,7 +82,11 @@ class App(QOpenGLWidget):
 
     def initializeGL(self):
         self._ctx = moderngl.create_context()
-        self._dem.upload(self._ctx)
+        try:
+            self._dem = DEM(self._ctx, Path(__file__).parent / "DSM_1m_UTM11N.tif")
+        except Exception as e:
+            print(e)
+            raise
 
     def paintGL(self):
         # Figure out which framebuffer is used by Qt for the widget and select it
@@ -98,4 +102,8 @@ class App(QOpenGLWidget):
         self._last_frame_time = current_time
 
         self._camera.on_update(delta_time)
-        self._dem.render(self._camera)
+        try:
+            self._dem.render(self._camera)
+        except Exception as e:
+            print(e)
+            raise
