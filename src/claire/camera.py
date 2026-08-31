@@ -69,6 +69,8 @@ class Camera:
 
         self._move_speed = 10.0
         self._rotation_speed = 0.15
+        self._slow_speed_factor = 1 / 25
+        self._fast_speed_factor = 50
 
         self._left_active = False
         self._right_active = False
@@ -76,6 +78,8 @@ class Camera:
         self._down_active = False
         self._forward_active = False
         self._backward_active = False
+        self._fast_active = False
+        self._slow_active = False
 
     def rotate(self, horizontal: float, vertical: float) -> None:
         self.yaw += horizontal * self._rotation_speed
@@ -118,25 +122,43 @@ class Camera:
     def stop_backward(self) -> None:
         self._backward_active = False
 
+    def start_fast(self) -> None:
+        self._fast_active = True
+
+    def stop_fast(self) -> None:
+        self._fast_active = False
+
+    def start_slow(self) -> None:
+        self._slow_active = True
+
+    def stop_slow(self) -> None:
+        self._slow_active = False
+
     def on_update(self, delta_time: float) -> None:
+        speed_multiplier = 1.0
+        if self._slow_active:
+            speed_multiplier *= self._slow_speed_factor
+        if self._fast_active:
+            speed_multiplier *= self._fast_speed_factor
+
         forward = self._forward_vector()
         right = self._right_vector()
         up = glm.cross(forward, right)
 
         if self._left_active:
-            self.position += -right * self._move_speed * delta_time
+            self.position += -right * self._move_speed * speed_multiplier * delta_time
         if self._right_active:
-            self.position += right * self._move_speed * delta_time
+            self.position += right * self._move_speed * speed_multiplier * delta_time
 
         if self._up_active:
-            self.position += up * self._move_speed * delta_time
+            self.position += up * self._move_speed * speed_multiplier * delta_time
         if self._down_active:
-            self.position += -up * self._move_speed * delta_time
+            self.position += -up * self._move_speed * speed_multiplier * delta_time
 
         if self._forward_active:
-            self.position += forward * self._move_speed * delta_time
+            self.position += forward * self._move_speed * speed_multiplier * delta_time
         if self._backward_active:
-            self.position += -forward * self._move_speed * delta_time
+            self.position += -forward * self._move_speed * speed_multiplier * delta_time
 
     def _forward_vector(self) -> glm.vec3:
         yaw = glm.radians(self.yaw)

@@ -18,6 +18,8 @@ _KEY_UP = Qt.Key.Key_Q
 _KEY_DOWN = Qt.Key.Key_E
 _KEY_FORWARD = Qt.Key.Key_W
 _KEY_BACKWARD = Qt.Key.Key_S
+_KEY_FAST_MODE = Qt.Key.Key_Control
+_KEY_SLOW_MODE = Qt.Key.Key_Shift
 
 class App(QOpenGLWidget):
     _ctx: moderngl.Context
@@ -65,6 +67,10 @@ class App(QOpenGLWidget):
             self._camera.start_forward()
         if event.key() == _KEY_BACKWARD:
             self._camera.start_backward()
+        if event.key() == _KEY_FAST_MODE:
+            self._camera.start_fast()
+        if event.key() == _KEY_SLOW_MODE:
+            self._camera.start_slow()
 
     def keyReleaseEvent(self, event: QKeyEvent):
         if event.key() == _KEY_UP:
@@ -79,6 +85,10 @@ class App(QOpenGLWidget):
             self._camera.stop_forward()
         if event.key() == _KEY_BACKWARD:
             self._camera.stop_backward()
+        if event.key() == _KEY_FAST_MODE:
+            self._camera.stop_fast()
+        if event.key() == _KEY_SLOW_MODE:
+            self._camera.stop_slow()
 
     def initializeGL(self):
         self._ctx = moderngl.create_context()
