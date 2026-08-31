@@ -27,7 +27,9 @@ class App(QOpenGLWidget):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self._camera = Camera(start_position=glm.vec3(3.0, 1.0, 3.0), look_at=glm.vec3(0.0, 0.0, 0.0))
+        self._camera = Camera(start_position=glm.vec3(6945, 3320, 8110), look_at=glm.vec3(0.0, 0.0, 0.0))
+        self._camera.pitch = -30
+        self._camera.yaw = 164
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update)
         self._timer.start(30)  # ~30 FPS
