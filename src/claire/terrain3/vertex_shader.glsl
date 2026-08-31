@@ -15,7 +15,7 @@ void main() {
     ivec2 subchunk_pos = subchunk_offset + mesh_pos;
     height = texelFetch(
         heightmap,
-        ivec3(subchunk_pos.x, subchunk_pos.y, chunk_id),
+        ivec3(subchunk_pos.y, subchunk_pos.x, chunk_id),
         0
     ).r;
     ivec2 terrain_pos = in_world_offset + subchunk_pos * lod_stride;
