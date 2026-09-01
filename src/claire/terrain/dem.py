@@ -41,6 +41,7 @@ def _create_index_buffer(rows: float, cols: float) -> np.ndarray:
 
 class DEM:
     def __init__(self, ctx: moderngl.Context, heightmap_tif: Path, chunk_size = 1024, mesh_size: int = 128) -> None:
+        """Heightmap values of zero or below are automatically discarded and not shown"""
         self._chunk_size_exponent = math.floor(math.log2(chunk_size))
         self._mesh_size_exponent = math.floor(math.log2(mesh_size))
         heightmap = imread(heightmap_tif)

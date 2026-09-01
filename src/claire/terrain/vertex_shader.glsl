@@ -19,6 +19,9 @@ void main() {
         0
     ).r;
     ivec2 terrain_pos = in_world_offset + subchunk_pos * lod_stride;
+    if (height <= 0.0f) {
+        height = 0.0f / 0.0f;  // NaN effectively marks all triangles using this vertex to be culled
+    }
     gl_Position = mvp * vec4(terrain_pos.x, height, terrain_pos.y, 1.0);
     height = 1.0f;
 }
