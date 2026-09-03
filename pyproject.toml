@@ -13,4 +13,6 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pyglm-typing>=0.2.1",
+    "pytest>=8.4.2",
+    "setuptools<82",  # older versions of PyCharm require it for IDE interactions
 ]
