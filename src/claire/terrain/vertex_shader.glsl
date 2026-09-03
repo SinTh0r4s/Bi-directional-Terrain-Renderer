@@ -12,7 +12,7 @@ uniform mat4 mvp;
 
 void main() {
     ivec2 mesh_pos = ivec2(gl_VertexID / mesh_size, gl_VertexID % mesh_size);
-    ivec2 subchunk_pos = subchunk_offset + mesh_pos;
+    ivec2 subchunk_pos = subchunk_offset * mesh_size + mesh_pos;
     height = texelFetch(
         heightmap,
         ivec3(subchunk_pos.y, subchunk_pos.x, chunk_id),
