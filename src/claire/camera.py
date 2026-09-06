@@ -13,12 +13,18 @@ class HasViewProjMatrices(ABC):
     def proj_matrix(self) -> glm.mat4: ...
 
 
+class HasCameraPositionResolutionFovNearplane(HasCameraPosition, ABC):
+    resolution: glm.ivec2
+    fov_deg: float
+    near_plane: float
+
+
 class Camera(HasCameraPosition, HasViewProjMatrices):
     def __init__(self, position: glm.vec3, rotation: glm.vec3):
         self.position = position
         self.rotation = rotation
         self.fov_deg = 45
-        self.aspect_ratio = 4 / 3
+        self.resolution = glm.ivec2(800, 600)
         self.near_plane = 1
         self.far_plane = 25_000
 
@@ -65,4 +71,4 @@ class Camera(HasCameraPosition, HasViewProjMatrices):
         )
 
     def proj_matrix(self) -> glm.mat4:
-        return glm.perspective(math.radians(self.fov_deg), self.aspect_ratio, self.near_plane, self.far_plane)
+        return glm.perspective(math.radians(self.fov_deg), self.resolution.x / self.resolution.y, self.near_plane, self.far_plane)

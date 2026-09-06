@@ -36,7 +36,7 @@ class CameraControl:
         self._slow_active = False
 
     def resizeGL(self, w: int, h: int) -> None:
-        self.camera.aspect_ratio = w / h
+        self.camera.resolution = glm.ivec2(w, h)
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
