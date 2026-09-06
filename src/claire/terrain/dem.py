@@ -6,7 +6,6 @@ from typing import Final
 
 import numpy as np
 import moderngl
-from skimage.io import imread
 
 from claire.camera import Camera
 from claire.terrain.chunk_cpu_data import load_chunks_into_cpu
@@ -40,17 +39,14 @@ def _create_index_buffer(rows: float, cols: float) -> np.ndarray:
 
 
 class DEM:
-    def __init__(self, ctx: moderngl.Context, heightmap_tif: Path, chunk_size = 1024, mesh_size: int = 128) -> None:
+    def __init__(self, ctx: moderngl.Context, heightmap: np.ndarray, chunk_size = 1024, mesh_size: int = 128) -> None:
         """Heightmap values of zero or below are automatically discarded and not shown"""
         self._chunk_size_exponent = math.floor(math.log2(chunk_size))
         self._mesh_size_exponent = math.floor(math.log2(mesh_size))
-        heightmap = imread(heightmap_tif)
         if heightmap.dtype != np.float32:
             msg = "Requiring a heightmap of float32!"
             raise ValueError(msg)
-        heightmap[heightmap < 0] = 0
         self._terrain_data = transfer_chunks_to_gpu(ctx, load_chunks_into_cpu(heightmap, self._chunk_size_exponent, self._mesh_size_exponent))
-        del heightmap  # free memory  TODO: validate!
         self._chunks = [Chunk(chunk_data, self._chunk_size_exponent) for chunk_data in self._terrain_data.chunks]
 
         self._program = ctx.program(
