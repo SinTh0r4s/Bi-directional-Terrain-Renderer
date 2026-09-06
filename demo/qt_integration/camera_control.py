@@ -52,7 +52,7 @@ class CameraControl:
         if self._last_mouse_pos is not None:
             d_yaw = pos.x() - self._last_mouse_pos.x()
             d_pitch = pos.y() - self._last_mouse_pos.y()
-            self.camera.rotate(glm.vec3(0, d_pitch, d_yaw))
+            self.camera.rotate(glm.vec3(0, -d_pitch, d_yaw))
         self._last_mouse_pos = pos
 
     def keyPressEvent(self, event: QKeyEvent):
