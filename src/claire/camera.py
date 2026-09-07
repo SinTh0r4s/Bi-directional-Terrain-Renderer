@@ -19,7 +19,7 @@ class HasCameraPositionResolutionFovNearplane(HasCameraPosition, ABC):
     near_plane: float
 
 
-class Camera(HasCameraPosition, HasViewProjMatrices):
+class Camera(HasCameraPositionResolutionFovNearplane, HasViewProjMatrices):
     def __init__(self, position: glm.vec3, rotation: glm.vec3):
         self.position = position
         self.rotation = rotation
