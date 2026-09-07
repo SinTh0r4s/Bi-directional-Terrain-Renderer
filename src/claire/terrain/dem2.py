@@ -46,6 +46,11 @@ class TerrainTextures:
     tile_id_lookup: moderngl.Texture
 
 
+def _ensure_array_size(array: HeightmapData, size: int) -> HeightmapData:
+    cols, rows = array.shape
+    return np.pad(array, ((0, size - cols), (0, size - rows)), "constant", constant_values=(0, 0))
+
+
 def _upload_textures(ctx: moderngl.Context, heightmap: HeightmapData, tile_size: int, max_lod_level: int) -> TerrainTextures:
     cols, rows = heightmap.shape
     tile_cols, tile_rows = math.ceil(cols / tile_size), math.ceil(rows / tile_size)
@@ -61,10 +66,10 @@ def _upload_textures(ctx: moderngl.Context, heightmap: HeightmapData, tile_size:
                 continue
             tile_id_lookup_array[tile_col, tile_row] = sequential_id
             sequential_id += 1
-            tiles[0].append(tile)
+            tiles[0].append(_ensure_array_size(tile, tile_size))
             for lod in range(1, max_lod_level + 1):
                 stride = 1 << lod
-                tiles[lod].append(heightmap[col:end_cols:stride, row:end_rows: stride])
+                tiles[lod].append(_ensure_array_size(heightmap[col:end_cols:stride, row:end_rows: stride], tile_size >> lod))
     stacked_texture_data = {lod: np.stack(tiles[lod]) for lod in tiles}
     texture_arrays: dict[int, moderngl.TextureArray] = {}
     for lod, texture_data in stacked_texture_data.items():
@@ -111,7 +116,7 @@ class DEM:
             fragment_shader=_FRAGMENT_SHADER.read_text(encoding="utf-8")
         )
 
-        self._mesh_size = 1 + 1 << mesh_size_exponent
+        self._mesh_size = (1 << mesh_size_exponent) + 1
         self._ibo = ctx.buffer(_create_index_buffer(self._mesh_size).tobytes())
         self._vao = ctx.vertex_array(self._program, [], index_buffer=self._ibo)
 
@@ -130,9 +135,11 @@ class DEM:
         self._program["heightmap"].write(np.arange(self._max_lod_level + 1, dtype=np.uint32).tobytes())
         self._textures.tile_id_lookup.use(location=self._max_lod_level + 1)
         self._program["tile_id_lookup"] = self._max_lod_level + 1
-        self._program["mvp"] = camera.proj_matrix() * camera.view_matrix()
+        self._program["mvp"].write((camera.proj_matrix() * camera.view_matrix()).to_bytes())
         selection = self._quadtree.filter(MaxErrorLodSelector(camera, self._max_y_error_in_px, self._lod_hysteresis_factor))
         for chunk in selection:
+            if not chunk.lod_data.aabb.is_visible(camera):
+                continue
             self._program["lod_level"] = chunk.lod_level
             self._program["offset"].write(chunk.terrain_offset.to_bytes())
             # self._program["neighbor_lod_nwse"].write(selection.get_neighbor_lods_nwse(chunk).to_bytes())
