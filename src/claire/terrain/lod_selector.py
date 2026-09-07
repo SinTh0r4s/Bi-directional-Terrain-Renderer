@@ -1,23 +1,30 @@
 import math
 from abc import ABC
-from typing import Literal
+from dataclasses import dataclass
+from typing import Literal, Optional, TypeVar, Generic
 
+import numpy as np
 from pyglm import glm
 
 from claire.aabb import AABB
 from claire.camera import HasCameraPositionResolutionFovNearplane
 from claire.terrain.numpy_types import HeightmapData
 
-class LodData(ABC):
+
+@dataclass
+class LodData:
     aabb: AABB
     max_error_y: float
 
 
-class LodSelector(ABC):
-    def should_refine(self, lod_data: LodData) -> Literal["refine", "render", "use_previous"]:...
+_T = TypeVar("_T")
 
 
-class MaxErrorLodSelector:
+class LodSelector(ABC, Generic[_T]):
+    def should_refine(self, lod_data: _T) -> Literal["refine", "render", "use_previous"]:...
+
+
+class MaxErrorLodSelector(LodSelector[LodData]):
     def __init__(self, camera: HasCameraPositionResolutionFovNearplane, max_error_in_px: float, hysteresis_factor: float = 0.1) -> None:
         self.camera = camera
         self._max_error_in_px = max_error_in_px
@@ -46,11 +53,11 @@ class MaxErrorLodSelector:
         return "use_previous"
 
 
-def inside_triangle(barycentric_coords: glm.vec3) -> bool:
+def _inside_triangle(barycentric_coords: glm.vec3) -> bool:
     return (barycentric_coords.x >= 0.0) and (barycentric_coords.y >= 0.0) and (barycentric_coords.z >= 0.0)
 
 
-def get_barycentric_coords(p: glm.vec2, a: glm.vec2, b: glm.vec2, c: glm.vec2) -> glm.vec3:
+def _get_barycentric_coords(p: glm.vec2, a: glm.vec2, b: glm.vec2, c: glm.vec2) -> glm.vec3:
     v0 = b - a
     v1 = c - a
     v2 = p - a
@@ -74,10 +81,10 @@ def _interpolate_height(a: float, b: float, c: float, d: float, col: float, row:
     point_c = glm.vec2(1, 0)
     point_d = glm.vec2(1, 1)
 
-    barycentric_coords = get_barycentric_coords(sample, point_a, point_b, point_c)
-    if inside_triangle(barycentric_coords):
+    barycentric_coords = _get_barycentric_coords(sample, point_a, point_b, point_c)
+    if _inside_triangle(barycentric_coords):
         return a * barycentric_coords.x + b * barycentric_coords.y + c * barycentric_coords.z
-    barycentric_coords = get_barycentric_coords(sample, point_b, point_c, point_d)
+    barycentric_coords = _get_barycentric_coords(sample, point_b, point_c, point_d)
     return b * barycentric_coords.x + c * barycentric_coords.y + d * barycentric_coords.z
 
 
@@ -128,3 +135,24 @@ def extract_lod_introduced_max_error(full_heightmap: HeightmapData, offset: glm.
 
                 max_error = max(max_error, error_1, error_2)
     return max_error
+
+
+def extract_lod_aabb(full_heightmap: HeightmapData, offset: glm.ivec2, lod_stride: int, lod_width: int) -> Optional[AABB]:
+    full_height_size = lod_stride * lod_width
+    full_cols, full_rows = full_heightmap.shape
+    max_col = min(full_cols, offset.x + full_height_size + 1) - offset.x
+    max_row = min(full_rows, offset.y + full_height_size + 1) - offset.y
+    lod_heightmap = full_heightmap[offset.x: max_col, offset.y: max_row]
+    max_height = np.max(lod_heightmap)
+    if max_height <= 0:
+        return None
+    min_height = np.min(lod_heightmap[lod_heightmap > 0])
+    return AABB(glm.vec3(offset.x, min_height, offset.y), glm.vec3(max_col, max_height, max_row))
+
+
+def create_load_data(heightmap: HeightmapData, terrain_offset: glm.ivec2, lod_stride: int, lod_size: int) -> Optional[LodData]:
+    aabb = extract_lod_aabb(heightmap, terrain_offset, lod_stride, lod_size)
+    if aabb is None:
+        return None
+    max_error_y = extract_lod_introduced_max_error(heightmap, terrain_offset, lod_stride, lod_size)
+    return LodData(aabb, max_error_y)
