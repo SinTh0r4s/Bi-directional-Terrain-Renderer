@@ -98,7 +98,7 @@ class Stats:
 
 
 class DEM:
-    def __init__(self, ctx: moderngl.Context, heightmap: HeightmapData, max_y_error_in_px: float, lod_hystersis_factor: float = 0.1, max_lod_level: int = 6, mesh_size_exponent: int = 7, texture_tile_size_exponent: int = 10) -> None:
+    def __init__(self, ctx: moderngl.Context, heightmap: HeightmapData, max_y_error_in_px: float, lod_hystersis_factor: float = 0.1, max_lod_level: int = 5, mesh_size_exponent: int = 7, texture_tile_size_exponent: int = 10) -> None:
         if heightmap.dtype != np.float32:
             msg = "Requiring a heightmap of float32!"
             raise ValueError(msg)

@@ -100,7 +100,7 @@ class QuadTree:
             state = lod_selector.should_refine(node.lod_data)
             if state == "use_previous":
                 state = "render" if self._previous_selection is None else ("refine" if self._previous_selection.has_refinements_of(node) else "render")
-            if state == "render":
+            if state == "render" or len(node.children) == 0:
                 selection.add(node)
             else:  # state == "refine"
                 for child in node.children:
