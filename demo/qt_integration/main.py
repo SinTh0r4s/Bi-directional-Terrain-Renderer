@@ -9,7 +9,7 @@ from PySide6.QtGui import QMouseEvent, QKeyEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMainWindow, QApplication
 
-from claire.terrain.dem import DEM
+from claire.terrain.dem2 import DEM
 from demo.heightmap_provider import load_heightmap
 from demo.qt_integration.camera_control import CameraControl
 
@@ -50,7 +50,7 @@ class App(QOpenGLWidget):
         self._ctx = moderngl.create_context()
         heightmap = load_heightmap()
         try:
-            self._dem = DEM(self._ctx, heightmap)
+            self._dem = DEM(self._ctx, heightmap, max_y_error_in_px=1.5)
         except Exception as e:
             print(e)
             raise
