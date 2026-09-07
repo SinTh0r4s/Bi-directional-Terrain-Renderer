@@ -55,7 +55,8 @@ def _upload_textures(ctx: moderngl.Context, heightmap: HeightmapData, tile_size:
     cols, rows = heightmap.shape
     tile_cols, tile_rows = math.ceil(cols / tile_size), math.ceil(rows / tile_size)
     tiles: dict[int, list[HeightmapData]] = defaultdict(list)
-    tile_id_lookup_array = np.full((tile_cols + 1, tile_rows + 1), -1, dtype=np.int32)
+    lookup_size = 1 << (max(tile_cols, tile_rows) + 1).bit_length()
+    tile_id_lookup_array = np.full((lookup_size, lookup_size), -1, dtype=np.int32)
     sequential_id = 0
     for tile_col in range(tile_cols):
         for tile_row in range(tile_rows):
@@ -81,7 +82,7 @@ def _upload_textures(ctx: moderngl.Context, heightmap: HeightmapData, tile_size:
             dtype="f4",
         )
     tile_id_lookup_texture = ctx.texture(
-        size=(tile_id_lookup_array.shape[0], tile_id_lookup_array.shape[1]),
+        size=tile_id_lookup_array.shape,
         components=1,
         data=tile_id_lookup_array.tobytes(),
         dtype="i4"
