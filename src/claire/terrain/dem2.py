@@ -137,6 +137,7 @@ class DEM:
         self._textures.tile_id_lookup.use(location=self._max_lod_level + 1)
         self._program["tile_id_lookup"] = self._max_lod_level + 1
         self._program["mvp"].write((camera.proj_matrix() * camera.view_matrix()).to_bytes())
+        self._program["camera_position"].write(camera.position.to_bytes())
         selection = self._quadtree.filter(MaxErrorLodSelector(camera, self._max_y_error_in_px, self._lod_hysteresis_factor))
         for chunk in selection:
             if not chunk.lod_data.aabb.is_visible(camera):
