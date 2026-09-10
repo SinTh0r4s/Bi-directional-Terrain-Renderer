@@ -145,7 +145,7 @@ class DEM:
                 continue
             self._program["lod_level"] = chunk.lod_level
             self._program["offset"].write(chunk.terrain_offset.to_bytes())
-            # self._program["neighbor_lod_nwse"].write(selection.get_neighbor_lods_nwse(chunk).to_bytes())
+            self._program["neighbor_lod_nwse"].write(selection.get_neighbor_lods_nwse(chunk).to_bytes())
             self._vao.render(mode=moderngl.TRIANGLES)
             self._draw_calls += 1
         self._duration_s = time.time() - time_start
