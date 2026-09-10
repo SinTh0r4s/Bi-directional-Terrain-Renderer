@@ -1,13 +1,14 @@
+from __future__ import annotations
+
 import sys
 import time
 
-import pyglm.glm as glm
-
 import moderngl
-from PySide6.QtCore import QTimer, Qt
-from PySide6.QtGui import QMouseEvent, QKeyEvent
+import pyglm.glm as glm
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QKeyEvent, QMouseEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QMainWindow, QApplication
+from PySide6.QtWidgets import QApplication, QMainWindow
 
 from claire.aabb_renderer import AabbRenderer
 from claire.skybox import Skybox

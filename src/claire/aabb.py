@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pyglm import glm
 
 from claire.camera import HasCameraPosition, HasViewProjMatrices

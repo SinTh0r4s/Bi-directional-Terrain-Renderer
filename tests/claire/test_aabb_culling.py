@@ -1,8 +1,10 @@
+from __future__ import annotations
+
+import pytest
+from pyglm import glm
+
 from claire.aabb import AABB
 from claire.camera import HasViewProjMatrices
-
-from pyglm import glm
-import pytest
 
 
 class FakeCamera(HasViewProjMatrices):

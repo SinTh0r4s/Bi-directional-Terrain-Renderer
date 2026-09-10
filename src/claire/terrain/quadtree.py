@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import math
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -6,7 +8,7 @@ from typing import Optional
 from pyglm import glm
 
 from claire.aabb import AABB
-from claire.terrain.lod_selector import LodSelector, LodData, create_load_data
+from claire.terrain.lod_selector import LodData, LodSelector, create_load_data
 from claire.terrain.numpy_types import HeightmapData
 
 

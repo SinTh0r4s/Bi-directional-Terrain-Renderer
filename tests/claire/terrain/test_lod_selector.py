@@ -1,5 +1,7 @@
-from pyglm import glm
+from __future__ import annotations
+
 import pytest
+from pyglm import glm
 
 from claire.aabb import AABB
 from claire.camera import HasCameraPositionResolutionFovNearplane

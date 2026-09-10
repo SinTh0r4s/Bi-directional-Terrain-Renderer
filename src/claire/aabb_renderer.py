@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Final
 
@@ -7,7 +9,6 @@ from pyglm import glm
 
 from claire.aabb import AABB
 from claire.camera import Camera
-
 
 _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "aabb.vert.glsl"
 _FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "aabb.frag.glsl"

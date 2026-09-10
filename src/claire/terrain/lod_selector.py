@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import math
 from abc import ABC
 from dataclasses import dataclass
-from typing import Literal, Optional, TypeVar, Generic
+from typing import Generic, Literal, Optional, TypeVar
 
 import numpy as np
 from pyglm import glm

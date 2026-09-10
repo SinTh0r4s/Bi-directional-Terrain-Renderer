@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from typing import Optional
 
-from PySide6.QtCore import QPointF, Qt
-from PySide6.QtGui import QMouseEvent, QKeyEvent
 from pyglm import glm
+from PySide6.QtCore import QPointF, Qt
+from PySide6.QtGui import QKeyEvent, QMouseEvent
 
 from claire.camera import Camera
 
