@@ -41,16 +41,16 @@ class CameraControl:
     def resizeGL(self, w: int, h: int) -> None:
         self.camera.resolution = glm.ivec2(w, h)
 
-    def mousePressEvent(self, event: QMouseEvent):
+    def mousePressEvent(self, event: QMouseEvent) -> None:
         if event.button() == Qt.MouseButton.LeftButton:
             self._left_mouse_button_pressed = True
             self._last_mouse_pos = event.position()
 
-    def mouseReleaseEvent(self, event: QMouseEvent):
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         if event.button() == Qt.MouseButton.LeftButton:
             self._left_mouse_button_pressed = False
 
-    def mouseMoveEvent(self, event: QMouseEvent):
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
         pos = event.position()
         if self._last_mouse_pos is not None:
             d_yaw = pos.x() - self._last_mouse_pos.x()
@@ -58,7 +58,7 @@ class CameraControl:
             self.camera.rotate(glm.vec3(0, -d_pitch, d_yaw))
         self._last_mouse_pos = pos
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == _KEY_UP:
             self._up_active = True
         if event.key() == _KEY_DOWN:
@@ -76,7 +76,7 @@ class CameraControl:
         if event.key() == _KEY_SLOW_MODE:
             self._slow_active = True
 
-    def keyReleaseEvent(self, event: QKeyEvent):
+    def keyReleaseEvent(self, event: QKeyEvent) -> None:
         if event.key() == _KEY_UP:
             self._up_active = False
         if event.key() == _KEY_DOWN:

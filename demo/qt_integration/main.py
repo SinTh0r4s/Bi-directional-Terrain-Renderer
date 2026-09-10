@@ -33,25 +33,25 @@ class App(QOpenGLWidget):
         # Would fire mouseMoveEvent even if no mouse button is down: self.setMouseTracking(True)
         self._last_frame_time = time.time()
 
-    def mousePressEvent(self, event: QMouseEvent):
+    def mousePressEvent(self, event: QMouseEvent) -> None:
         self._camera_control.mousePressEvent(event)
 
-    def mouseReleaseEvent(self, event: QMouseEvent):
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         self._camera_control.mouseReleaseEvent(event)
 
-    def mouseMoveEvent(self, event: QMouseEvent):
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
         self._camera_control.mouseMoveEvent(event)
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         self._camera_control.keyPressEvent(event)
 
-    def keyReleaseEvent(self, event: QKeyEvent):
+    def keyReleaseEvent(self, event: QKeyEvent) -> None:
         self._camera_control.keyReleaseEvent(event)
 
     def resizeGL(self, w: int, h: int, /) -> None:
         self._camera_control.resizeGL(w, h)
 
-    def initializeGL(self):
+    def initializeGL(self) -> None:
         self._ctx = moderngl.create_context()
         heightmap = load_heightmap()
         try:
@@ -62,7 +62,7 @@ class App(QOpenGLWidget):
             print(e)
             raise
 
-    def paintGL(self):
+    def paintGL(self) -> None:
         # Figure out which framebuffer is used by Qt for the widget and select it
         fbo = self._ctx.detect_framebuffer()
         fbo.use()
