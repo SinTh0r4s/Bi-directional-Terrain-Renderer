@@ -5,6 +5,7 @@ from typing import Optional
 
 from pyglm import glm
 
+from claire.aabb import AABB
 from claire.terrain.lod_selector import LodSelector, LodData, create_load_data
 from claire.terrain.numpy_types import HeightmapData
 
@@ -110,3 +111,8 @@ class QuadTree:
             filter_node(node)
         self._previous_selection = selection
         return selection
+
+    def get_aabbs(self) -> list[AABB]:
+        if self._previous_selection is None:
+            return []
+        return [chunk.lod_data.aabb for chunk in self._previous_selection]

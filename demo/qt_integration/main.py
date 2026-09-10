@@ -9,6 +9,7 @@ from PySide6.QtGui import QMouseEvent, QKeyEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMainWindow, QApplication
 
+from claire.aabb_renderer import AabbRenderer
 from claire.terrain.dem2 import DEM
 from demo.heightmap_provider import load_heightmap
 from demo.qt_integration.camera_control import CameraControl
@@ -51,6 +52,7 @@ class App(QOpenGLWidget):
         heightmap = load_heightmap()
         try:
             self._dem = DEM(self._ctx, heightmap, max_y_error_in_px=1.5)
+            self._aabb_renderer = AabbRenderer(self._ctx)
         except Exception as e:
             print(e)
             raise
@@ -62,7 +64,6 @@ class App(QOpenGLWidget):
 
         self._ctx.enable(moderngl.DEPTH_TEST)
         self._ctx.clear(0.5, 0.5, 0.5)
-        self._ctx.wireframe = True
 
         current_time = time.time()
         delta_time = current_time - self._last_frame_time
@@ -71,6 +72,7 @@ class App(QOpenGLWidget):
         self._camera_control.update(delta_time)
         try:
             self._dem.render(self._camera_control.camera)
+            self._aabb_renderer.render(self._camera_control.camera, self._dem.get_aabbs())
         except Exception as e:
             print(e)
             raise

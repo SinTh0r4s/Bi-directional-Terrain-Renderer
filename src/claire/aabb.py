@@ -9,6 +9,9 @@ class AABB:
         self._position_min = position_min
         self._position_max = position_max
 
+    def get_unit_cube_model_matrix(self) -> glm.mat4:
+        return glm.translate(self._position_min) * glm.scale(self._position_max - self._position_min)
+
     def get_shortest_distance_to(self, camera: HasCameraPosition) -> float:
         return glm.length(
             glm.vec3(
