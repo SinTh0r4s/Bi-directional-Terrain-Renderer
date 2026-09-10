@@ -11,8 +11,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "basedpyright>=1.39.10",
     "pyglm-typing>=0.2.1",
     "pytest>=8.4.2",
+    "ruff>=0.16.7",
     "setuptools<82",  # older versions of PyCharm require it for IDE interactions
 ]
 demo = [
