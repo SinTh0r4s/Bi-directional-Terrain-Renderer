@@ -15,9 +15,99 @@ dev = [
     "pyglm-typing>=0.2.1",
     "pytest>=8.4.2",
     "ruff>=0.16.7",
-    "setuptools<82",  # older versions of PyCharm require it for IDE interactions
+    "setuptools<82", # older versions of PyCharm require it for IDE interactions
+    "versioningit>=3.3.0",
 ]
 demo = [
     "pyside6>=6.10.3",
     "scikit-image>=0.24.0",
 ]
+
+[build-system]
+requires = ["hatchling==1.27.0", "versioningit>=3.3.0,<4.0.0"]  # newer hatchling versions don't support python 3.9
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "versioningit"
+
+[tool.versioningit.vcs]
+method = "git"
+default-tag = "0.0.0"
+
+[tool.versioningit.format]
+distance = "{base_version}.post{distance}+{vcs_name}.{rev}"
+dirty = "{base_version}+dirty.{vcs_name}.{rev}.{build_date:%Y%m%d}"
+distance-dirty = "{base_version}.post{distance}+dirty.{vcs_name}.{rev}.{build_date:%Y%m%d}"
+
+[tool.poe]
+executor = "uv"
+
+# poe _extra_args exists, but only if arguments exist. It thows an error if none are provided. Until it is fixed, these
+# tasks substitute '_extra_args' with 'environ["POE_EXTRA_ARGS"].split(" ") if "POE_EXTRA_ARGS" in environ else []'
+[tool.poe.tasks.format]
+help = "Formats the entire code base with ruff"
+cmd = "ruff format $POE_EXTRA_ARGS"
+
+[tool.poe.tasks.lint]
+help = "Lints the entire code base with ruff"
+script = 'fix_cli_paths:ruff_with_output_format_full(["check"], *(environ["POE_EXTRA_ARGS"].split(" ") if "POE_EXTRA_ARGS" in environ else []))'
+verbosity = -1 # script prints poe invokation
+
+[tool.poe.tasks.type]
+help = "Static type checks via basedpyright"
+script = 'fix_cli_paths:basedpyright(*(environ["POE_EXTRA_ARGS"].split(" ") if "POE_EXTRA_ARGS" in environ else []))'
+verbosity = -1 # script prints poe invokation
+
+[tool.poe.tasks.check]
+help = "Lint & type in parallel"
+parallel = ["lint", "type"]
+
+[tool.poe.tasks.fix]
+help = "Ruff fixes all safely fixable issues"
+script = 'fix_cli_paths:ruff_with_output_format_full(["check", "--fix"], *(environ["POE_EXTRA_ARGS"].split(" ") if "POE_EXTRA_ARGS" in environ else []))'
+verbosity = -1 # script prints poe invokation
+
+[tool.poe.tasks.fix-unsafe]
+help = "Ruff fixes issues should work, but have breaking edgecases (risky)"
+script = 'fix_cli_paths:ruff_with_output_format_full(["check", "--unsafe-fixes"], *(environ["POE_EXTRA_ARGS"].split(" ") if "POE_EXTRA_ARGS" in environ else []))'
+verbosity = -1 # script prints poe invokation
+
+[tool.poe.tasks.test]
+help = "Run unit tests and collect coverage information"
+cmd = "coverage run -m pytest ./tests/ -v --color=yes $POE_EXTRA_ARGS"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint.isort]
+required-imports = [
+    "from __future__ import annotations"
+]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "CPY",
+    "COM812",
+    "D",
+    "DOC",
+    "E501", # line length enforced by formatter
+    "TD",
+]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**/test_*.py" = ["PLR2004", "S101"]
+"stubs/**/*.pyi" = ["A002"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.basedpyright]
+typeCheckingMode = "strict"
+stubPath = "stubs"
+reportUnusedImport = "none"  # reported by ruff
+reportPrivateUsage = "none"  # reported by ruff
