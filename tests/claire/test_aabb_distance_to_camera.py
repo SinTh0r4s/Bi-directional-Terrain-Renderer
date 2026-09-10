@@ -9,12 +9,14 @@ class _FakeCamera(HasCameraPosition):
     def __init__(self, position: glm.vec3) -> None:
         self.position = position
 
+
 _AABB = AABB(position_min=glm.vec3(0, 0, 0), position_max=glm.vec3(10, 10, 10))
 
 
 def test_camera_in_box() -> None:
     camera = _FakeCamera(glm.vec3(5, 5, 5))
     assert _AABB.get_shortest_distance_to(camera) == pytest.approx(0)
+
 
 def test_camera_above_box() -> None:
     camera = _FakeCamera(glm.vec3(5, 5, 15))

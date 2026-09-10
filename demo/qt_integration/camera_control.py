@@ -15,6 +15,7 @@ _KEY_BACKWARD = Qt.Key.Key_S
 _KEY_FAST_MODE = Qt.Key.Key_Control
 _KEY_SLOW_MODE = Qt.Key.Key_Shift
 
+
 class CameraControl:
     def __init__(self, position: glm.vec3, rotation: glm.vec3) -> None:
         self.camera = Camera(position, rotation)
@@ -116,6 +117,4 @@ class CameraControl:
         if self._fast_active:
             speed_multiplier *= self._fast_speed_factor
 
-        self.camera.translate_relative(
-            glm.vec3(forward, right, up) * speed_multiplier * delta_time_sec
-        )
+        self.camera.translate_relative(glm.vec3(forward, right, up) * speed_multiplier * delta_time_sec)

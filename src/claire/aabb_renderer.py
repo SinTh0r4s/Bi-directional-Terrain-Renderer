@@ -9,16 +9,17 @@ from claire.aabb import AABB
 from claire.camera import Camera
 
 
-_VERTEX_SHADER: Final[Path] = Path(__file__).parent / 'shaders' / 'aabb.vert.glsl'
-_FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / 'shaders' / 'aabb.frag.glsl'
+_VERTEX_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "aabb.vert.glsl"
+_FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "aabb.frag.glsl"
 
 
 class AabbRenderer:
     def __init__(self, ctx: moderngl.Context) -> None:
         self._program = ctx.program(
             vertex_shader=_VERTEX_SHADER.read_text(encoding="utf-8"),
-            fragment_shader=_FRAGMENT_SHADER.read_text(encoding="utf-8")
+            fragment_shader=_FRAGMENT_SHADER.read_text(encoding="utf-8"),
         )
+        # fmt: off
         self._vbo = ctx.buffer(
             np.array(
                 [
@@ -44,6 +45,7 @@ class AabbRenderer:
                 ], dtype=np.uint32
             ).tobytes()
         )
+        # fmt: on
         self._vao = ctx.vertex_array(
             self._program,
             [(self._vbo, "3f", "in_position")],

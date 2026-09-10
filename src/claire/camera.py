@@ -31,9 +31,7 @@ class Camera(HasCameraPositionResolutionFovNearplane, HasViewProjMatrices):
     def look_at(self, target: glm.vec3) -> None:
         direction = glm.normalize(target - self.position)
         self.rotation = glm.vec3(
-            0,
-            glm.degrees(glm.asin(direction.y)),
-            glm.degrees(glm.atan(direction.x, -direction.z))
+            0, glm.degrees(glm.asin(direction.y)), glm.degrees(glm.atan(direction.x, -direction.z))
         )
 
     def rotate(self, offset: glm.vec3) -> None:
@@ -49,11 +47,13 @@ class Camera(HasCameraPositionResolutionFovNearplane, HasViewProjMatrices):
     def _forward_vector(self) -> glm.vec3:
         yaw = glm.radians(self.rotation.z)
         pitch = glm.radians(self.rotation.y)
-        return glm.normalize(glm.vec3(
-            glm.sin(yaw) * glm.cos(pitch),
-            glm.sin(pitch),
-            -glm.cos(yaw) * glm.cos(pitch),
-        ))
+        return glm.normalize(
+            glm.vec3(
+                glm.sin(yaw) * glm.cos(pitch),
+                glm.sin(pitch),
+                -glm.cos(yaw) * glm.cos(pitch),
+            )
+        )
 
     def _right_vector(self) -> glm.vec3:
         return glm.normalize(
@@ -71,4 +71,6 @@ class Camera(HasCameraPositionResolutionFovNearplane, HasViewProjMatrices):
         )
 
     def proj_matrix(self) -> glm.mat4:
-        return glm.perspective(math.radians(self.fov_deg), self.resolution.x / self.resolution.y, self.near_plane, self.far_plane)
+        return glm.perspective(
+            math.radians(self.fov_deg), self.resolution.x / self.resolution.y, self.near_plane, self.far_plane
+        )

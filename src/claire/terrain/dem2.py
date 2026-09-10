@@ -22,10 +22,10 @@ def _create_index_buffer(size: int) -> np.ndarray:
     num_quads = (size - 1) * (size - 1)
     num_indices = num_quads * 6  # 2 triangles * 3 indices per quad
 
-    index_data = np.empty(num_indices, dtype='u4')
+    index_data = np.empty(num_indices, dtype="u4")
 
     # Generate vertex corner indices for every quad cell
-    r_indices, c_indices = np.mgrid[0:size - 1, 0:size - 1]
+    r_indices, c_indices = np.mgrid[0 : size - 1, 0 : size - 1]
     top_left = (r_indices * size + c_indices).flatten()
     top_right = top_left + 1
     bottom_left = top_left + size
@@ -52,7 +52,9 @@ def _ensure_array_size(array: HeightmapData, size: int) -> HeightmapData:
     return np.pad(array, ((0, size - cols), (0, size - rows)), "constant", constant_values=(0, 0))
 
 
-def _upload_textures(ctx: moderngl.Context, heightmap: HeightmapData, tile_size: int, max_lod_level: int) -> TerrainTextures:
+def _upload_textures(
+    ctx: moderngl.Context, heightmap: HeightmapData, tile_size: int, max_lod_level: int
+) -> TerrainTextures:
     cols, rows = heightmap.shape
     tile_cols, tile_rows = math.ceil(cols / tile_size), math.ceil(rows / tile_size)
     tiles: dict[int, list[HeightmapData]] = defaultdict(list)
@@ -71,7 +73,9 @@ def _upload_textures(ctx: moderngl.Context, heightmap: HeightmapData, tile_size:
             tiles[0].append(_ensure_array_size(tile, tile_size))
             for lod in range(1, max_lod_level + 1):
                 stride = 1 << lod
-                tiles[lod].append(_ensure_array_size(heightmap[col:end_cols:stride, row:end_rows: stride], tile_size >> lod))
+                tiles[lod].append(
+                    _ensure_array_size(heightmap[col:end_cols:stride, row:end_rows:stride], tile_size >> lod)
+                )
     stacked_texture_data = {lod: np.stack(tiles[lod]) for lod in tiles}
     texture_arrays: dict[int, moderngl.TextureArray] = {}
     for lod, texture_data in stacked_texture_data.items():
@@ -83,10 +87,7 @@ def _upload_textures(ctx: moderngl.Context, heightmap: HeightmapData, tile_size:
             dtype="f4",
         )
     tile_id_lookup_texture = ctx.texture(
-        size=tile_id_lookup_array.shape,
-        components=1,
-        data=tile_id_lookup_array.tobytes(),
-        dtype="i4"
+        size=tile_id_lookup_array.shape, components=1, data=tile_id_lookup_array.tobytes(), dtype="i4"
     )
     return TerrainTextures(texture_arrays, tile_id_lookup_texture)
 
@@ -99,7 +100,16 @@ class Stats:
 
 
 class DEM:
-    def __init__(self, ctx: moderngl.Context, heightmap: HeightmapData, max_y_error_in_px: float, lod_hystersis_factor: float = 0.1, max_lod_level: int = 5, mesh_size_exponent: int = 7, texture_tile_size_exponent: int = 10) -> None:
+    def __init__(
+        self,
+        ctx: moderngl.Context,
+        heightmap: HeightmapData,
+        max_y_error_in_px: float,
+        lod_hystersis_factor: float = 0.1,
+        max_lod_level: int = 5,
+        mesh_size_exponent: int = 7,
+        texture_tile_size_exponent: int = 10,
+    ) -> None:
         if heightmap.dtype != np.float32:
             msg = "Requiring a heightmap of float32!"
             raise ValueError(msg)
@@ -115,7 +125,7 @@ class DEM:
 
         self._program = ctx.program(
             vertex_shader=self._bake_vertex_shader(_VERTEX_SHADER.read_text(encoding="utf-8")),
-            fragment_shader=_FRAGMENT_SHADER.read_text(encoding="utf-8")
+            fragment_shader=_FRAGMENT_SHADER.read_text(encoding="utf-8"),
         )
 
         self._mesh_size = (1 << mesh_size_exponent) + 1
@@ -139,7 +149,9 @@ class DEM:
         self._program["tile_id_lookup"] = self._max_lod_level + 1
         self._program["mvp"].write((camera.proj_matrix() * camera.view_matrix()).to_bytes())
         self._program["camera_position"].write(camera.position.to_bytes())
-        selection = self._quadtree.filter(MaxErrorLodSelector(camera, self._max_y_error_in_px, self._lod_hysteresis_factor))
+        selection = self._quadtree.filter(
+            MaxErrorLodSelector(camera, self._max_y_error_in_px, self._lod_hysteresis_factor)
+        )
         for chunk in selection:
             if not chunk.lod_data.aabb.is_visible(camera):
                 continue

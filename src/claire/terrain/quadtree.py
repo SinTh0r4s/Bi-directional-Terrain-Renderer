@@ -33,7 +33,8 @@ class ChunkSelection:
             (node.lod_level - 1, node.terrain_offset.x, node.terrain_offset.y) in self._chunk_map
             or (node.lod_level - 1, node.terrain_offset.x, node.terrain_offset.y + child_stride) in self._chunk_map
             or (node.lod_level - 1, node.terrain_offset.x + child_stride, node.terrain_offset.y) in self._chunk_map
-            or (node.lod_level - 1, node.terrain_offset.x + child_stride, node.terrain_offset.y + child_stride) in self._chunk_map
+            or (node.lod_level - 1, node.terrain_offset.x + child_stride, node.terrain_offset.y + child_stride)
+            in self._chunk_map
         )
 
     def __iter__(self) -> Iterator[Node]:
@@ -59,7 +60,9 @@ class ChunkSelection:
         )
 
 
-def _create_node(heightmap: HeightmapData, terrain_offset: glm.ivec2, tile_size: int, current_lod_level: int) -> Optional[Node]:
+def _create_node(
+    heightmap: HeightmapData, terrain_offset: glm.ivec2, tile_size: int, current_lod_level: int
+) -> Optional[Node]:
     lod_stride = 1 << current_lod_level
     lod_data = create_load_data(heightmap, terrain_offset, lod_stride, tile_size)
     if lod_data is None:
@@ -72,7 +75,9 @@ def _create_node(heightmap: HeightmapData, terrain_offset: glm.ivec2, tile_size:
         _create_node(heightmap, terrain_offset, tile_size, current_lod_level - 1),
         _create_node(heightmap, terrain_offset + glm.ivec2(0, delta_offset), tile_size, current_lod_level - 1),
         _create_node(heightmap, terrain_offset + glm.ivec2(delta_offset, 0), tile_size, current_lod_level - 1),
-        _create_node(heightmap, terrain_offset + glm.ivec2(delta_offset, delta_offset), tile_size, current_lod_level - 1),
+        _create_node(
+            heightmap, terrain_offset + glm.ivec2(delta_offset, delta_offset), tile_size, current_lod_level - 1
+        ),
     ]
     return Node(lod_data, terrain_offset, current_lod_level, [child for child in children if child is not None])
 
@@ -88,6 +93,7 @@ def _create_root_nodes(heightmap: HeightmapData, mesh_size_exponent: int, max_lo
             root_nodes.append(_create_node(heightmap, offset, mesh_size, max_lod_level))
     return [node for node in root_nodes if node is not None]
 
+
 class QuadTree:
     def __init__(self, heightmap: HeightmapData, mesh_size_exponent: int, max_lod_level: int) -> None:
         self._root_nodes = _create_root_nodes(heightmap, mesh_size_exponent, max_lod_level)
@@ -97,10 +103,15 @@ class QuadTree:
 
     def filter(self, lod_selector: LodSelector[LodData]) -> ChunkSelection:
         selection = ChunkSelection(self._max_lod_level, self._mesh_size)
+
         def filter_node(node: Node) -> None:
             state = lod_selector.should_refine(node.lod_data)
             if state == "use_previous":
-                state = "render" if self._previous_selection is None else ("refine" if self._previous_selection.has_refinements_of(node) else "render")
+                state = (
+                    "render"
+                    if self._previous_selection is None
+                    else ("refine" if self._previous_selection.has_refinements_of(node) else "render")
+                )
             if state == "render" or len(node.children) == 0:
                 selection.add(node)
             else:  # state == "refine"

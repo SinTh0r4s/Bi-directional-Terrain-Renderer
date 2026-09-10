@@ -73,6 +73,7 @@ def test_div_by_zero_protection_too_close_to_camera(aabb: AABB) -> None:
     selector = MaxErrorLodSelector(camera, 10.0, 0.0)
     assert selector.should_refine(_TestLodData(aabb, 99999999999999)) == "render"
 
+
 def test_update_camera_changes_selection(aabb):
     camera = _Camera(position=(0.0, 0.0, 100.0))
     selector = MaxErrorLodSelector(camera, 10.0, 0.0)

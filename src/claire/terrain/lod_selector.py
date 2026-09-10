@@ -21,11 +21,13 @@ _T = TypeVar("_T")
 
 
 class LodSelector(ABC, Generic[_T]):
-    def should_refine(self, lod_data: _T) -> Literal["refine", "render", "use_previous"]:...
+    def should_refine(self, lod_data: _T) -> Literal["refine", "render", "use_previous"]: ...
 
 
 class MaxErrorLodSelector(LodSelector[LodData]):
-    def __init__(self, camera: HasCameraPositionResolutionFovNearplane, max_error_in_px: float, hysteresis_factor: float = 0.1) -> None:
+    def __init__(
+        self, camera: HasCameraPositionResolutionFovNearplane, max_error_in_px: float, hysteresis_factor: float = 0.1
+    ) -> None:
         self.camera = camera
         self._max_error_in_px = max_error_in_px
         self._hysteresis_factor = hysteresis_factor
@@ -52,12 +54,14 @@ class MaxErrorLodSelector(LodSelector[LodData]):
         return "use_previous"
 
 
-def extract_lod_aabb(full_heightmap: HeightmapData, offset: glm.ivec2, lod_stride: int, lod_width: int) -> Optional[AABB]:
+def extract_lod_aabb(
+    full_heightmap: HeightmapData, offset: glm.ivec2, lod_stride: int, lod_width: int
+) -> Optional[AABB]:
     full_height_size = lod_stride * lod_width
     full_cols, full_rows = full_heightmap.shape
     max_col = min(full_cols, offset.x + full_height_size + 1)
     max_row = min(full_rows, offset.y + full_height_size + 1)
-    lod_heightmap = full_heightmap[offset.x: max_col, offset.y: max_row]
+    lod_heightmap = full_heightmap[offset.x : max_col, offset.y : max_row]
     if lod_heightmap.shape[0] == 0 or lod_heightmap.shape[1] == 0:
         return None
     max_height = np.max(lod_heightmap)
@@ -67,8 +71,10 @@ def extract_lod_aabb(full_heightmap: HeightmapData, offset: glm.ivec2, lod_strid
     return AABB(glm.vec3(offset.x, min_height, offset.y), glm.vec3(max_col, max_height, max_row))
 
 
-def create_load_data(heightmap: HeightmapData, terrain_offset: glm.ivec2, lod_stride: int, lod_size: int) -> Optional[LodData]:
+def create_load_data(
+    heightmap: HeightmapData, terrain_offset: glm.ivec2, lod_stride: int, lod_size: int
+) -> Optional[LodData]:
     aabb = extract_lod_aabb(heightmap, terrain_offset, lod_stride, lod_size)
     if aabb is None:
         return None
-    return LodData(aabb, int(math.log2(lod_stride)))#, max_error_y)
+    return LodData(aabb, int(math.log2(lod_stride)))  # , max_error_y)

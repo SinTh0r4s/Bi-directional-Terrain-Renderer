@@ -112,6 +112,7 @@ def test_rotated_right() -> None:
     camera = FakeCamera(view, proj)
     assert _get_aabb(3, 0, 0).is_visible(camera)
 
+
 def test_camera_rotated_up() -> None:
     view = glm.lookAt(
         glm.vec3(0, 0, 0),

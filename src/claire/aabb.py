@@ -5,6 +5,7 @@ from claire.camera import HasCameraPosition, HasViewProjMatrices
 
 class AABB:
     """Axis-aligned bounding box"""
+
     def __init__(self, position_min: glm.vec3, position_max: glm.vec3) -> None:
         self._position_min = position_min
         self._position_max = position_max
@@ -17,8 +18,9 @@ class AABB:
             glm.vec3(
                 glm.clamp(camera.position.x, self._position_min.x, self._position_max.x),
                 glm.clamp(camera.position.y, self._position_min.y, self._position_max.y),
-                glm.clamp(camera.position.z, self._position_min.z, self._position_max.z)
-            ) - camera.position
+                glm.clamp(camera.position.z, self._position_min.z, self._position_max.z),
+            )
+            - camera.position
         )
 
     def is_visible(self, camera: HasViewProjMatrices) -> bool:
@@ -79,11 +81,6 @@ class AABB:
                 self._position_max.y if plane.y >= 0.0 else self._position_min.y,
                 self._position_max.z if plane.z >= 0.0 else self._position_min.z,
             )
-            if (
-                plane.x * positive.x
-                + plane.y * positive.y
-                + plane.z * positive.z
-                + plane.w
-            ) < 0.0:
+            if (plane.x * positive.x + plane.y * positive.y + plane.z * positive.z + plane.w) < 0.0:
                 return False
         return True

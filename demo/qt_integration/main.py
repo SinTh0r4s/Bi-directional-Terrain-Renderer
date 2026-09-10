@@ -86,7 +86,6 @@ class App(QOpenGLWidget):
             raise
 
 
-
 def main() -> None:
     app = QApplication(sys.argv)
 
@@ -98,5 +97,5 @@ def main() -> None:
     sys.exit(app.exec())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
