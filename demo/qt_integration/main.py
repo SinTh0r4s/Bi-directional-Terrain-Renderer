@@ -10,6 +10,7 @@ from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QMainWindow, QApplication
 
 from claire.aabb_renderer import AabbRenderer
+from claire.skybox import Skybox
 from claire.terrain.dem2 import DEM
 from demo.heightmap_provider import load_heightmap
 from demo.qt_integration.camera_control import CameraControl
@@ -18,6 +19,8 @@ from demo.qt_integration.camera_control import CameraControl
 class App(QOpenGLWidget):
     _ctx: moderngl.Context
     _dem: DEM
+    _aabb_renderer: AabbRenderer
+    _skybox: Skybox
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -53,6 +56,7 @@ class App(QOpenGLWidget):
         try:
             self._dem = DEM(self._ctx, heightmap, max_y_error_in_px=1.5)
             self._aabb_renderer = AabbRenderer(self._ctx)
+            self._skybox = Skybox(self._ctx)
         except Exception as e:
             print(e)
             raise
@@ -64,6 +68,10 @@ class App(QOpenGLWidget):
 
         self._ctx.enable(moderngl.DEPTH_TEST)
         self._ctx.clear(0.5, 0.5, 0.5)
+
+        self._ctx.disable(moderngl.DEPTH_TEST)
+        self._skybox.render(self._camera_control.camera)
+        self._ctx.enable(moderngl.DEPTH_TEST)
 
         current_time = time.time()
         delta_time = current_time - self._last_frame_time
