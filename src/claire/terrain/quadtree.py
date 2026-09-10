@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from pyglm import glm
 
-from claire.aabb import AABB
 from claire.terrain.lod_selector import LodData, LodSelector, create_load_data
-from claire.terrain.numpy_types import HeightmapData
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from claire.aabb import AABB
+    from claire.terrain.numpy_types import HeightmapData
 
 
 @dataclass
@@ -17,7 +20,7 @@ class Node:
     lod_data: LodData
     terrain_offset: glm.ivec2
     lod_level: int
-    children: "list[Node]"
+    children: list[Node]
 
 
 class ChunkSelection:
@@ -64,7 +67,7 @@ class ChunkSelection:
 
 def _create_node(
     heightmap: HeightmapData, terrain_offset: glm.ivec2, tile_size: int, current_lod_level: int
-) -> Optional[Node]:
+) -> Node | None:
     lod_stride = 1 << current_lod_level
     lod_data = create_load_data(heightmap, terrain_offset, lod_stride, tile_size)
     if lod_data is None:
@@ -84,8 +87,8 @@ def _create_node(
     return Node(lod_data, terrain_offset, current_lod_level, [child for child in children if child is not None])
 
 
-def _create_root_nodes(heightmap: HeightmapData, mesh_size_exponent: int, max_lod_level: int):
-    root_nodes: list[Optional[Node]] = []
+def _create_root_nodes(heightmap: HeightmapData, mesh_size_exponent: int, max_lod_level: int) -> list[Node]:
+    root_nodes: list[Node | None] = []
     mesh_size = 1 << mesh_size_exponent
     root_chunk_size = 1 << (mesh_size_exponent + max_lod_level)
     cols, rows = heightmap.shape
@@ -99,7 +102,7 @@ def _create_root_nodes(heightmap: HeightmapData, mesh_size_exponent: int, max_lo
 class QuadTree:
     def __init__(self, heightmap: HeightmapData, mesh_size_exponent: int, max_lod_level: int) -> None:
         self._root_nodes = _create_root_nodes(heightmap, mesh_size_exponent, max_lod_level)
-        self._previous_selection: Optional[ChunkSelection] = None
+        self._previous_selection: ChunkSelection | None = None
         self._max_lod_level = max_lod_level
         self._mesh_size = 1 << mesh_size_exponent
 

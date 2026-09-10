@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import moderngl
 import numpy as np
 from pyglm import glm
 
-from claire.aabb import AABB
-from claire.camera import Camera
+if TYPE_CHECKING:
+    from claire.aabb import AABB
+    from claire.camera import Camera
 
 _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "aabb.vert.glsl"
 _FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "aabb.frag.glsl"

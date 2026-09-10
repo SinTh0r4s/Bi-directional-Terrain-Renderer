@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from abc import ABC
+from abc import ABC, abstractmethod
 
 from pyglm import glm
 
@@ -11,7 +11,9 @@ class HasCameraPosition(ABC):
 
 
 class HasViewProjMatrices(ABC):
+    @abstractmethod
     def view_matrix(self) -> glm.mat4: ...
+    @abstractmethod
     def proj_matrix(self) -> glm.mat4: ...
 
 
@@ -22,7 +24,7 @@ class HasCameraPositionResolutionFovNearplane(HasCameraPosition, ABC):
 
 
 class Camera(HasCameraPositionResolutionFovNearplane, HasViewProjMatrices):
-    def __init__(self, position: glm.vec3, rotation: glm.vec3):
+    def __init__(self, position: glm.vec3, rotation: glm.vec3) -> None:
         self.position = position
         self.rotation = rotation
         self.fov_deg = 45

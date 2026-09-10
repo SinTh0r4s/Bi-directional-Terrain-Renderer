@@ -3,14 +3,16 @@ from __future__ import annotations
 import math
 from abc import ABC
 from dataclasses import dataclass
-from typing import Generic, Literal, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, Literal, TypeVar
 
 import numpy as np
 from pyglm import glm
 
 from claire.aabb import AABB
-from claire.camera import HasCameraPositionResolutionFovNearplane
-from claire.terrain.numpy_types import HeightmapData
+
+if TYPE_CHECKING:
+    from claire.camera import HasCameraPositionResolutionFovNearplane
+    from claire.terrain.numpy_types import HeightmapData
 
 
 @dataclass
@@ -56,9 +58,7 @@ class MaxErrorLodSelector(LodSelector[LodData]):
         return "use_previous"
 
 
-def extract_lod_aabb(
-    full_heightmap: HeightmapData, offset: glm.ivec2, lod_stride: int, lod_width: int
-) -> Optional[AABB]:
+def extract_lod_aabb(full_heightmap: HeightmapData, offset: glm.ivec2, lod_stride: int, lod_width: int) -> AABB | None:
     full_height_size = lod_stride * lod_width
     full_cols, full_rows = full_heightmap.shape
     max_col = min(full_cols, offset.x + full_height_size + 1)
@@ -75,7 +75,7 @@ def extract_lod_aabb(
 
 def create_load_data(
     heightmap: HeightmapData, terrain_offset: glm.ivec2, lod_stride: int, lod_size: int
-) -> Optional[LodData]:
+) -> LodData | None:
     aabb = extract_lod_aabb(heightmap, terrain_offset, lod_stride, lod_size)
     if aabb is None:
         return None

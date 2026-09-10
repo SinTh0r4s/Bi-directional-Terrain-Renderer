@@ -5,16 +5,18 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final
+from typing import TYPE_CHECKING, Final
 
 import moderngl
 import numpy as np
 
-from claire.aabb import AABB
-from claire.camera import Camera
 from claire.terrain.lod_selector import MaxErrorLodSelector
-from claire.terrain.numpy_types import HeightmapData
 from claire.terrain.quadtree import QuadTree
+
+if TYPE_CHECKING:
+    from claire.aabb import AABB
+    from claire.camera import Camera
+    from claire.terrain.numpy_types import HeightmapData
 
 _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "vertex_shader2.glsl"
 _FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "fragment_shader.glsl"

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from pyglm import glm
 
-from claire.camera import HasCameraPosition, HasViewProjMatrices
+if TYPE_CHECKING:
+    from claire.camera import HasCameraPosition, HasViewProjMatrices
 
 
 class AABB:
@@ -33,42 +36,42 @@ class AABB:
         # glm matrices are column-major, so extracting rows explicitly
         # gives the correct clip-space inequalities.
         planes: tuple[glm.vec4, ...] = (
-            # Left:   x + w >= 0
+            # Left:   x + w >= 0  # noqa: ERA001
             glm.vec4(
                 view_proj[0][3] + view_proj[0][0],
                 view_proj[1][3] + view_proj[1][0],
                 view_proj[2][3] + view_proj[2][0],
                 view_proj[3][3] + view_proj[3][0],
             ),
-            # Right:  w - x >= 0
+            # Right:  w - x >= 0  # noqa: ERA001
             glm.vec4(
                 view_proj[0][3] - view_proj[0][0],
                 view_proj[1][3] - view_proj[1][0],
                 view_proj[2][3] - view_proj[2][0],
                 view_proj[3][3] - view_proj[3][0],
             ),
-            # Bottom: y + w >= 0
+            # Bottom: y + w >= 0  # noqa: ERA001
             glm.vec4(
                 view_proj[0][3] + view_proj[0][1],
                 view_proj[1][3] + view_proj[1][1],
                 view_proj[2][3] + view_proj[2][1],
                 view_proj[3][3] + view_proj[3][1],
             ),
-            # Top:    w - y >= 0
+            # Top:    w - y >= 0  # noqa: ERA001
             glm.vec4(
                 view_proj[0][3] - view_proj[0][1],
                 view_proj[1][3] - view_proj[1][1],
                 view_proj[2][3] - view_proj[2][1],
                 view_proj[3][3] - view_proj[3][1],
             ),
-            # Near:   z + w >= 0  (OpenGL)
+            # Near:   z + w >= 0  (OpenGL)  # noqa: ERA001
             glm.vec4(
                 view_proj[0][3] + view_proj[0][2],
                 view_proj[1][3] + view_proj[1][2],
                 view_proj[2][3] + view_proj[2][2],
                 view_proj[3][3] + view_proj[3][2],
             ),
-            # Far:    w - z >= 0
+            # Far:    w - z >= 0  # noqa: ERA001
             glm.vec4(
                 view_proj[0][3] - view_proj[0][2],
                 view_proj[1][3] - view_proj[1][2],

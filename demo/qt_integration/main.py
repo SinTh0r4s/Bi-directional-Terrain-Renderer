@@ -2,19 +2,23 @@ from __future__ import annotations
 
 import sys
 import time
+from typing import TYPE_CHECKING
 
 import moderngl
-import pyglm.glm as glm
+from pyglm import glm
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QKeyEvent, QMouseEvent
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QApplication, QMainWindow
+from typing_extensions import override
 
 from claire.aabb_renderer import AabbRenderer
 from claire.skybox import Skybox
 from claire.terrain.dem2 import DEM
 from demo.heightmap_provider import load_heightmap
 from demo.qt_integration.camera_control import CameraControl
+
+if TYPE_CHECKING:
+    from PySide6.QtGui import QKeyEvent, QMouseEvent
 
 
 class App(QOpenGLWidget):
@@ -23,7 +27,7 @@ class App(QOpenGLWidget):
     _aabb_renderer: AabbRenderer
     _skybox: Skybox
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
         super().__init__(*args, **kwargs)
         self._camera_control = CameraControl(position=glm.vec3(6945, 3320, 8110), rotation=glm.vec3(0, -30, 164))
         self._timer = QTimer(self)
@@ -33,24 +37,31 @@ class App(QOpenGLWidget):
         # Would fire mouseMoveEvent even if no mouse button is down: self.setMouseTracking(True)
         self._last_frame_time = time.time()
 
+    @override
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        self._camera_control.mousePressEvent(event)
+        self._camera_control.mouse_press_event(event)
 
+    @override
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        self._camera_control.mouseReleaseEvent(event)
+        self._camera_control.mouse_release_event(event)
 
+    @override
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        self._camera_control.mouseMoveEvent(event)
+        self._camera_control.mouse_move_event(event)
 
+    @override
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        self._camera_control.keyPressEvent(event)
+        self._camera_control.key_press_event(event)
 
+    @override
     def keyReleaseEvent(self, event: QKeyEvent) -> None:
-        self._camera_control.keyReleaseEvent(event)
+        self._camera_control.key_release_event(event)
 
+    @override
     def resizeGL(self, w: int, h: int, /) -> None:
-        self._camera_control.resizeGL(w, h)
+        self._camera_control.resize_gl(w, h)
 
+    @override
     def initializeGL(self) -> None:
         self._ctx = moderngl.create_context()
         heightmap = load_heightmap()
@@ -59,9 +70,10 @@ class App(QOpenGLWidget):
             self._aabb_renderer = AabbRenderer(self._ctx)
             self._skybox = Skybox(self._ctx)
         except Exception as e:
-            print(e)
+            print(e)  # noqa: T201
             raise
 
+    @override
     def paintGL(self) -> None:
         # Figure out which framebuffer is used by Qt for the widget and select it
         fbo = self._ctx.detect_framebuffer()
@@ -83,7 +95,7 @@ class App(QOpenGLWidget):
             self._dem.render(self._camera_control.camera)
             self._aabb_renderer.render(self._camera_control.camera, self._dem.get_aabbs())
         except Exception as e:
-            print(e)
+            print(e)  # noqa: T201
             raise
 
 

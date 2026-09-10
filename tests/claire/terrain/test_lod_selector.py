@@ -15,15 +15,16 @@ class _Camera(HasCameraPositionResolutionFovNearplane):
         resolution: tuple[int, int] = (1920, 1080),
         fov_deg: float = 60.0,
         near_plane: float = 0.1,
-    ):
+    ) -> None:
         self.position = glm.vec3(*position)
         self.resolution = glm.ivec2(*resolution)
         self.fov_deg = fov_deg
         self.near_plane = near_plane
 
 
+# TODO: rework max_error_y
 class _TestLodData(LodData):
-    def __init__(self, aabb: AABB, max_error_y: float):
+    def __init__(self, aabb: AABB, max_error_y: float) -> None:
         self.aabb = aabb
         self.max_error_y = max_error_y
 
