@@ -1,0 +1,28 @@
+# PyCharm
+.idea/**
+!.idea/vcs.xml
+# Activate ruff & basedpyright LSP
+!.idea/pyLspTools.xml
+
+!.idea/inspectionProfiles/
+.idea/inspectionProfiles/*
+# Disables PyCharm default LSP functions
+!.idea/inspectionProfiles/profiles_settings.xml
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Coverage
+.coverage
+htmlcov/
+
+*.tif
+*.tiff
