@@ -65,7 +65,7 @@ def extract_lod_aabb(full_heightmap: HeightmapData, offset: glm.ivec2, lod_strid
     return AABB(glm.vec3(offset.x, min_height, offset.y), glm.vec3(max_col, max_height, max_row))
 
 
-def create_load_data(
+def create_lod_data(
     heightmap: HeightmapData, terrain_offset: glm.ivec2, lod_stride: int, lod_size: int
 ) -> LodData | None:
     aabb = extract_lod_aabb(heightmap, terrain_offset, lod_stride, lod_size)

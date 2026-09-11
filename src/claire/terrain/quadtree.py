@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from pyglm import glm
 
-from claire.terrain.lod_selector import LodData, LodSelector, create_load_data
+from claire.terrain.lod_selector import LodData, LodSelector, create_lod_data
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -69,7 +69,7 @@ def _create_node(
     heightmap: HeightmapData, terrain_offset: glm.ivec2, tile_size: int, current_lod_level: int
 ) -> Node | None:
     lod_stride = 1 << current_lod_level
-    lod_data = create_load_data(heightmap, terrain_offset, lod_stride, tile_size)
+    lod_data = create_lod_data(heightmap, terrain_offset, lod_stride, tile_size)
     if lod_data is None:
         return None
     if current_lod_level == 0:
