@@ -111,6 +111,8 @@ class QuadTree:
 
         def filter_node(node: Node) -> None:
             state = lod_selector.should_refine(node.lod_data)
+            if state == "cull":
+                return
             if state == "use_previous":
                 state = (
                     "render"

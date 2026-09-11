@@ -11,7 +11,7 @@ from pyglm import glm
 from claire.aabb import AABB
 
 if TYPE_CHECKING:
-    from claire.camera import HasCameraPositionResolutionFovNearplane
+    from claire.camera import Camera
     from claire.terrain.numpy_types import HeightmapData
 
 
@@ -25,22 +25,22 @@ _T = TypeVar("_T")
 
 
 class LodSelector(ABC, Generic[_T]):
-    def should_refine(self, lod_data: _T) -> Literal["refine", "render", "use_previous"]: ...
+    def should_refine(self, lod_data: _T) -> Literal["cull", "refine", "render", "use_previous"]: ...
 
 
-class MaxErrorLodSelector(LodSelector[LodData]):
-    def __init__(
-        self, camera: HasCameraPositionResolutionFovNearplane, max_error_in_px: float, hysteresis_factor: float = 0.1
-    ) -> None:
-        self.camera = camera
+class CullingLodSelector(LodSelector[LodData]):
+    def __init__(self, camera: Camera, max_error_in_px: float, hysteresis_factor: float = 0.1) -> None:
+        self._camera = camera
         self._max_error_in_px = max_error_in_px
         self._hysteresis_factor = hysteresis_factor
 
-    def update_camera(self, camera: HasCameraPositionResolutionFovNearplane) -> None:
-        self.camera = camera
+    def update_camera(self, camera: Camera) -> None:
+        self._camera = camera
 
-    def should_refine(self, lod_data: LodData) -> Literal["refine", "render", "use_previous"]:
-        distance = lod_data.aabb.get_shortest_distance_to(self.camera)
+    def should_refine(self, lod_data: LodData) -> Literal["cull", "refine", "render", "use_previous"]:
+        if not lod_data.aabb.is_visible(self._camera):
+            return "cull"
+        distance = lod_data.aabb.get_shortest_distance_to(self._camera)
         base_distance = 30
         effective_distance = base_distance * (1 << lod_data.lod_level) - 100
         if distance >= effective_distance * (1 - self._hysteresis_factor):

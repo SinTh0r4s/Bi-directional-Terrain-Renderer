@@ -11,7 +11,7 @@ import moderngl
 import numpy as np
 
 from claire.lighting import Lighting
-from claire.terrain.lod_selector import MaxErrorLodSelector
+from claire.terrain.lod_selector import CullingLodSelector
 from claire.terrain.quadtree import QuadTree
 
 if TYPE_CHECKING:
@@ -161,7 +161,7 @@ class DEM:
         self._program["sun_direction"].write(lighting.sun_direction.to_bytes())
         self._program["sun_color"].write(lighting.sun_color.to_bytes())
         selection = self._quadtree.filter(
-            MaxErrorLodSelector(camera, self._max_y_error_in_px, self._lod_hysteresis_factor)
+            CullingLodSelector(camera, self._max_y_error_in_px, self._lod_hysteresis_factor)
         )
         for chunk in selection:
             if not chunk.lod_data.aabb.is_visible(camera):
