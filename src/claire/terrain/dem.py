@@ -5,7 +5,7 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, cast
 
 import moderngl
 import numpy as np
@@ -33,11 +33,11 @@ class DemConfig:
     texture_tile_size_exponent: int = 10
 
 
-def _create_index_buffer(size: int) -> np.ndarray:
+def _create_index_buffer(size: int) -> np.ndarray[tuple[int], np.dtype[np.uint32]]:
     num_quads = (size - 1) * (size - 1)
     num_indices = num_quads * 6  # 2 triangles * 3 indices per quad
 
-    index_data = np.empty(num_indices, dtype="u4")
+    index_data = np.empty(num_indices, dtype=np.uint32)
 
     # Generate vertex corner indices for every quad cell
     r_indices, c_indices = np.mgrid[0 : size - 1, 0 : size - 1]
@@ -102,7 +102,7 @@ def _upload_textures(
             dtype="f4",
         )
     tile_id_lookup_texture = ctx.texture(
-        size=tile_id_lookup_array.shape,
+        size=cast("tuple[int, int]", tile_id_lookup_array.shape),
         components=1,
         data=np.ascontiguousarray(tile_id_lookup_array.T).tobytes(),
         dtype="i4",

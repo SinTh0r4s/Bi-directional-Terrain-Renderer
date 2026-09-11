@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, cast
 
+import numpy as np
 from skimage.io import imread
 
 if TYPE_CHECKING:
@@ -21,6 +22,9 @@ def load_heightmap() -> HeightmapData:
         print(f"And download {_PATH.name} from page 2")  # noqa: T201
         print(f"Save it under {_PATH}")  # noqa: T201
         sys.exit(0)
-    heightmap = imread(_PATH)
+    heightmap = cast("HeightmapData", imread(_PATH))
+    if heightmap.dtype != np.float32:
+        msg = "Requiring a heightmap of float32!"
+        raise ValueError(msg)
     heightmap[heightmap <= 0] = 0
     return heightmap
