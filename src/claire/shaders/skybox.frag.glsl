@@ -15,8 +15,8 @@ const float SUN_HALO_POWER = 64.0;
 const float SUN_HALO_STRENGTH = 0.25;
 
 const vec3 HORIZON_COLOR = vec3(0.95, 0.72, 0.48);
-const float HORIZON_STRENGTH = 0.10;
-const float HORIZON_WIDTH = 10.0;
+const float HORIZON_STRENGTH = 0.30;
+const float HORIZON_WIDTH = 3.0;
 
 // TODO: sync with terrain
 const vec3 SUN_DIR = normalize(vec3(-0.6, 0.8, -0.35));
@@ -40,14 +40,8 @@ void main() {
 
     // Sky gradient
     vec3 sky;
-    if (y >= 0.0) {
-        float t = smoothstep(0.0, 1.0, y);
-        sky = mix(SKY_MIDDLE, SKY_ZENITH, t);
-    }
-    else {
-        float t = smoothstep(-0.35, 0.0, y);
-        sky = mix(HORIZON_COLOR, SKY_MIDDLE, t);
-    }
+
+    sky = mix(SKY_MIDDLE, SKY_ZENITH, clamp(y, 0.0, 1.0));
 
     // warm atmosphere
     float horizon = exp(-abs(y) * HORIZON_WIDTH);
