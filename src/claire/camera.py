@@ -25,12 +25,12 @@ class HasCameraPositionResolutionFovNearplane(HasCameraPosition, ABC):
 
 class Camera(HasCameraPositionResolutionFovNearplane, HasViewProjMatrices):
     def __init__(self, position: glm.vec3, rotation: glm.vec3) -> None:
-        self.position = position
-        self.rotation = rotation
-        self.fov_deg = 45
-        self.resolution = glm.ivec2(800, 600)
-        self.near_plane = 1
-        self.far_plane = 25_000
+        self.position: glm.vec3 = position
+        self.rotation: glm.vec3 = rotation
+        self.fov_deg: float = 45
+        self.resolution: glm.ivec2 = glm.ivec2(800, 600)
+        self.near_plane: float = 1
+        self.far_plane: float = 25_000
 
     def copy(self) -> Camera:
         new_camera = Camera(self.position, self.rotation)
@@ -48,7 +48,7 @@ class Camera(HasCameraPositionResolutionFovNearplane, HasViewProjMatrices):
 
     def rotate(self, offset: glm.vec3) -> None:
         self.rotation += offset
-        self.rotation.y = glm.clamp(self.rotation.y, -89.0, 89.0)
+        self.rotation.y = max(-89.0, min(89.0, self.rotation.y))
 
     def translate_relative(self, forward_right_up: glm.vec3) -> None:
         forward = self._forward_vector()
