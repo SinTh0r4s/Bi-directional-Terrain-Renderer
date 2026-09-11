@@ -14,10 +14,10 @@ from PySide6.QtWidgets import QApplication, QMainWindow
 from typing_extensions import override
 
 from claire.aabb_renderer import AabbRenderer
-from claire.lighting import Lighting
+from claire.config import Config
 from claire.qt_integration import load_qt_image
 from claire.skybox import Skybox
-from claire.terrain.dem import DEM
+from claire.terrain.dem import DEM, DemConfig
 from claire.terrain_picture_overlay import TerrainPictureOverlay
 from demo.heightmap_provider import load_heightmap
 from demo.qt_integration.camera_control import CameraControl
@@ -42,7 +42,7 @@ class App(QOpenGLWidget):
 
     def __init__(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
         super().__init__(*args, **kwargs)
-        self._lighting = Lighting()
+        self._config = Config()
         self._camera_control = CameraControl(position=glm.vec3(6945, 3320, 8110), rotation=glm.vec3(0, -30, 164))
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update)
@@ -81,8 +81,8 @@ class App(QOpenGLWidget):
         heightmap = load_heightmap()
         try:
             self._terrain_image = load_qt_image(self._ctx, QImage(_GREYSCALE_IMAGE))
-            self._image_overlay = TerrainPictureOverlay(self._ctx)
-            self._dem = DEM(self._ctx, heightmap, lod_base_distance=1500)
+            self._image_overlay = TerrainPictureOverlay(self._ctx, self._config.picture_overlay)
+            self._dem = DEM(self._ctx, heightmap, DemConfig(), self._config.lod_config)
             self._aabb_renderer = AabbRenderer(self._ctx)
             self._skybox = Skybox(self._ctx)
         except Exception as e:
@@ -99,7 +99,7 @@ class App(QOpenGLWidget):
         self._ctx.clear(0.5, 0.5, 0.5)
 
         self._ctx.disable(moderngl.DEPTH_TEST)
-        self._skybox.render(self._camera_control.camera, self._lighting)
+        self._skybox.render(self._camera_control.camera, self._config.lighting)
         self._ctx.enable(moderngl.DEPTH_TEST)
 
         current_time = time.time()
@@ -108,7 +108,7 @@ class App(QOpenGLWidget):
 
         self._camera_control.update(delta_time)
         try:
-            self._dem.render(self._camera_control.camera, self._lighting)
+            self._dem.render(self._camera_control.camera, self._config.lighting)
             print(self._dem.stats())  # noqa: T201
             # Enable for debugging if needed
             # self._aabb_renderer.render(self._camera_control.camera, self._dem.get_aabbs())  # noqa: ERA001

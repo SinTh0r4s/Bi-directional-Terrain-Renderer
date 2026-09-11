@@ -16,6 +16,12 @@ if TYPE_CHECKING:
 
 
 @dataclass
+class LodConfig:
+    hysteresis_factor: float = 0.1
+    base_distance_m: float = 1500
+
+
+@dataclass
 class LodData:
     aabb: AABB
     lod_level: int
@@ -29,10 +35,9 @@ class LodSelector(ABC, Generic[_T]):
 
 
 class CullingLodSelector(LodSelector[LodData]):
-    def __init__(self, camera: Camera, base_distance: float, hysteresis_factor: float = 0.1) -> None:
+    def __init__(self, camera: Camera, config: LodConfig) -> None:
         self._camera = camera
-        self._base_distance = base_distance
-        self._hysteresis_factor = hysteresis_factor
+        self._config = config
 
     def update_camera(self, camera: Camera) -> None:
         self._camera = camera
@@ -41,8 +46,8 @@ class CullingLodSelector(LodSelector[LodData]):
         if not lod_data.aabb.is_visible(self._camera):
             return "cull"
         distance = lod_data.aabb.get_shortest_distance_to(self._camera)
-        effective_distance = self._base_distance * (1 << lod_data.lod_level) - 100
-        if distance >= effective_distance * (1 - self._hysteresis_factor):
+        effective_distance = self._config.base_distance_m * (1 << lod_data.lod_level) - 100
+        if distance >= effective_distance * (1 - self._config.hysteresis_factor):
             return "render"
         if distance <= effective_distance:
             return "refine"
@@ -70,4 +75,4 @@ def create_lod_data(
     aabb = extract_lod_aabb(heightmap, terrain_offset, lod_stride, lod_size)
     if aabb is None:
         return None
-    return LodData(aabb, int(math.log2(lod_stride)))  # , max_error_y)
+    return LodData(aabb, int(math.log2(lod_stride)))

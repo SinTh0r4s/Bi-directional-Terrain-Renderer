@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Final
 import moderngl
 import numpy as np
 
-from claire.terrain.lod_selector import CullingLodSelector
+from claire.terrain.lod_selector import CullingLodSelector, LodConfig
 from claire.terrain.quadtree import QuadTree
 
 if TYPE_CHECKING:
@@ -21,6 +21,15 @@ if TYPE_CHECKING:
 
 _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "terrain.vert.glsl"
 _FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "terrain.frag.glsl"
+
+
+@dataclass(frozen=True)
+class DemConfig:
+    """There values can only be set once when the DEM class is initialized."""
+
+    max_lod_level: int = 5
+    mesh_size_exponent: int = 7
+    texture_tile_size_exponent: int = 10
 
 
 def _create_index_buffer(size: int) -> np.ndarray:
@@ -112,34 +121,29 @@ class Stats:
 
 class DEM:
     def __init__(
-        self,
-        ctx: moderngl.Context,
-        heightmap: HeightmapData,
-        lod_base_distance: float,
-        lod_hystersis_factor: float = 0.1,
-        max_lod_level: int = 5,
-        mesh_size_exponent: int = 7,
-        texture_tile_size_exponent: int = 10,
+        self, ctx: moderngl.Context, heightmap: HeightmapData, config: DemConfig, lod_config: LodConfig
     ) -> None:
         if heightmap.dtype != np.float32:
             msg = "Requiring a heightmap of float32!"
             raise ValueError(msg)
-        self._lod_base_distance = lod_base_distance
-        self._lod_hysteresis_factor = lod_hystersis_factor
-        self._max_lod_level = max_lod_level
-        self._mesh_size_exponent = mesh_size_exponent
-        self._texture_tile_size_exponent = texture_tile_size_exponent
+        self._config = config
+        self._lod_config = lod_config
         self._duration_s = 0
 
-        self._quadtree = QuadTree(heightmap, mesh_size_exponent, max_lod_level)
-        self._textures = _upload_textures(ctx, heightmap, 1 << self._texture_tile_size_exponent, max_lod_level)
+        self._quadtree = QuadTree(heightmap, self._config.mesh_size_exponent, self._config.max_lod_level)
+        self._textures = _upload_textures(
+            ctx,
+            heightmap,
+            1 << self._config.texture_tile_size_exponent,
+            self._config.max_lod_level,
+        )
 
         self._program = ctx.program(
             vertex_shader=self._bake_vertex_shader(_VERTEX_SHADER.read_text(encoding="utf-8")),
             fragment_shader=_FRAGMENT_SHADER.read_text(encoding="utf-8"),
         )
 
-        self._mesh_size = (1 << mesh_size_exponent) + 1
+        self._mesh_size = (1 << self._config.mesh_size_exponent) + 1
         self._ibo = ctx.buffer(_create_index_buffer(self._mesh_size).tobytes())
         self._vao = ctx.vertex_array(self._program, [], index_buffer=self._ibo)
 
@@ -153,27 +157,25 @@ class DEM:
 
     def _bake_vertex_shader(self, raw_string: str) -> str:
         return raw_string.format(
-            LOD_COUNT=self._max_lod_level + 1,
-            MESH_SIZE_EXPONENT=self._mesh_size_exponent,
-            TEXTURE_TILE_SIZE_EXPONENT=self._texture_tile_size_exponent,
+            LOD_COUNT=self._config.max_lod_level + 1,
+            MESH_SIZE_EXPONENT=self._config.mesh_size_exponent,
+            TEXTURE_TILE_SIZE_EXPONENT=self._config.texture_tile_size_exponent,
         )
 
     def render(self, camera: Camera, lighting: Lighting) -> None:
         self._draw_calls = 0
         time_start = time.time()
-        for lod in range(self._max_lod_level + 1):
+        for lod in range(self._config.max_lod_level + 1):
             self._textures.texture_arrays_per_lod[lod].use(location=lod)
-        self._program["heightmap"].write(np.arange(self._max_lod_level + 1, dtype=np.uint32).tobytes())
-        self._textures.tile_id_lookup.use(location=self._max_lod_level + 1)
-        self._program["tile_id_lookup"] = self._max_lod_level + 1
+        self._program["heightmap"].write(np.arange(self._config.max_lod_level + 1, dtype=np.uint32).tobytes())
+        self._textures.tile_id_lookup.use(location=self._config.max_lod_level + 1)
+        self._program["tile_id_lookup"] = self._config.max_lod_level + 1
         self._program["mvp"].write((camera.proj_matrix() * camera.view_matrix()).to_bytes())
         self._program["camera_position"].write(camera.position.to_bytes())
         self._program["terrain_default_color"].write(lighting.terrain_default_color.to_bytes())
         self._program["sun_direction"].write(lighting.sun_direction.to_bytes())
         self._program["sun_color"].write(lighting.sun_color.to_bytes())
-        selection = self._quadtree.filter(
-            CullingLodSelector(camera, self._lod_base_distance, self._lod_hysteresis_factor)
-        )
+        selection = self._quadtree.filter(CullingLodSelector(camera, self._lod_config))
         for chunk in selection:
             if not chunk.lod_data.aabb.is_visible(camera):
                 continue

@@ -19,14 +19,14 @@ if TYPE_CHECKING:
 class Node:
     lod_data: LodData
     terrain_offset: glm.ivec2
+    world_size: int
     lod_level: int
     children: list[Node]
 
 
 class ChunkSelection:
-    def __init__(self, max_lod_level: int, mesh_size: int) -> None:
+    def __init__(self, max_lod_level: int) -> None:
         self._max_lod_level = max_lod_level
-        self._mesh_size = mesh_size
         self._chunk_map: dict[tuple[int, int, int], Node] = {}
 
     def add(self, node: Node) -> None:
@@ -45,10 +45,9 @@ class ChunkSelection:
     def __iter__(self) -> Iterator[Node]:
         return iter(self._chunk_map.values())
 
-    def _sample_neighbor_lod(self, requesting_lod_level: int, x: int, y: int) -> int:
+    def _sample_neighbor_lod(self, requesting_lod_level: int, x: int, y: int, base_size: int) -> int:
         for lod_level in range(requesting_lod_level, self._max_lod_level + 1):
-            stride = 1 << lod_level
-            tile_size = self._mesh_size * stride
+            tile_size = base_size * (1 << lod_level)
             x = (x // tile_size) * tile_size
             y = (y // tile_size) * tile_size
             if (lod_level, x, y) in self._chunk_map:
@@ -56,12 +55,20 @@ class ChunkSelection:
         return requesting_lod_level
 
     def get_neighbor_lods_nwse(self, node: Node) -> glm.ivec4:
-        tile_size = (1 << node.lod_level) * self._mesh_size
+        base_size = node.world_size >> node.lod_level
         return glm.ivec4(
-            self._sample_neighbor_lod(node.lod_level, node.terrain_offset.x, node.terrain_offset.y - tile_size),
-            self._sample_neighbor_lod(node.lod_level, node.terrain_offset.x - tile_size, node.terrain_offset.y),
-            self._sample_neighbor_lod(node.lod_level, node.terrain_offset.x, node.terrain_offset.y + tile_size),
-            self._sample_neighbor_lod(node.lod_level, node.terrain_offset.x + tile_size, node.terrain_offset.y),
+            self._sample_neighbor_lod(
+                node.lod_level, node.terrain_offset.x, node.terrain_offset.y - node.world_size, base_size
+            ),
+            self._sample_neighbor_lod(
+                node.lod_level, node.terrain_offset.x - node.world_size, node.terrain_offset.y, base_size
+            ),
+            self._sample_neighbor_lod(
+                node.lod_level, node.terrain_offset.x, node.terrain_offset.y + node.world_size, base_size
+            ),
+            self._sample_neighbor_lod(
+                node.lod_level, node.terrain_offset.x + node.world_size, node.terrain_offset.y, base_size
+            ),
         )
 
 
@@ -73,9 +80,9 @@ def _create_node(
     if lod_data is None:
         return None
     if current_lod_level == 0:
-        return Node(lod_data, terrain_offset, current_lod_level, [])
-    lod_stride >>= 1
-    delta_offset = lod_stride * tile_size
+        return Node(lod_data, terrain_offset, lod_stride * tile_size, current_lod_level, [])
+    children_lod_stride = lod_stride >> 1
+    delta_offset = children_lod_stride * tile_size
     children = [
         _create_node(heightmap, terrain_offset, tile_size, current_lod_level - 1),
         _create_node(heightmap, terrain_offset + glm.ivec2(0, delta_offset), tile_size, current_lod_level - 1),
@@ -84,7 +91,13 @@ def _create_node(
             heightmap, terrain_offset + glm.ivec2(delta_offset, delta_offset), tile_size, current_lod_level - 1
         ),
     ]
-    return Node(lod_data, terrain_offset, current_lod_level, [child for child in children if child is not None])
+    return Node(
+        lod_data,
+        terrain_offset,
+        lod_stride * tile_size,
+        current_lod_level,
+        [child for child in children if child is not None],
+    )
 
 
 def _create_root_nodes(heightmap: HeightmapData, mesh_size_exponent: int, max_lod_level: int) -> list[Node]:
@@ -104,10 +117,9 @@ class QuadTree:
         self._root_nodes = _create_root_nodes(heightmap, mesh_size_exponent, max_lod_level)
         self._previous_selection: ChunkSelection | None = None
         self._max_lod_level = max_lod_level
-        self._mesh_size = 1 << mesh_size_exponent
 
     def filter(self, lod_selector: LodSelector[LodData]) -> ChunkSelection:
-        selection = ChunkSelection(self._max_lod_level, self._mesh_size)
+        selection = ChunkSelection(self._max_lod_level)
 
         def filter_node(node: Node) -> None:
             state = lod_selector.should_refine(node.lod_data)

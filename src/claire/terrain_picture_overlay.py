@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
@@ -15,8 +16,15 @@ _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "image_overlay
 _FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "image_overlay.frag.glsl"
 
 
+@dataclass
+class TerrainPictureOverlayConfig:
+    color_bias: glm.vec3 = field(default_factory=lambda: glm.vec3(1.0, 0.15, 0.45))
+    blend_alpha: float = field(default=0.3)
+
+
 class TerrainPictureOverlay:
-    def __init__(self, ctx: moderngl.Context) -> None:
+    def __init__(self, ctx: moderngl.Context, config: TerrainPictureOverlayConfig) -> None:
+        self._config = config
         self._program = ctx.program(
             vertex_shader=_VERTEX_SHADER.read_text(encoding="utf-8"),
             fragment_shader=_FRAGMENT_SHADER.read_text(encoding="utf-8"),
@@ -49,11 +57,10 @@ class TerrainPictureOverlay:
     def render(self, camera: Camera, picture: TerrainPicture) -> None:
         picture.bind_to_location(location=0)
         self._program["image"] = 0
-        color_bias = glm.vec3(1.0, 0.15, 0.45)
-        self._program["color_bias"].write(color_bias.to_bytes())
+        self._program["color_bias"].write(self._config.color_bias.to_bytes())
+        self._program["blend_alpha"] = self._config.blend_alpha
         self._program["image_over_viewport_aspect_ratio"] = picture.aspect_ratio / (
             camera.resolution.x / camera.resolution.y
         )
         self._program["is_greyscale"] = picture.is_greyscale
-        self._program["blend_alpha"] = 0.3
         self._vao.render(mode=moderngl.TRIANGLES)
