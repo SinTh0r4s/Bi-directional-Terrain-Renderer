@@ -7,10 +7,9 @@ import moderngl
 import numpy as np
 from pyglm import glm
 
-from claire.lighting import Lighting
-
 if TYPE_CHECKING:
     from claire.camera import Camera
+    from claire.lighting import Lighting
 
 _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "skybox.vert.glsl"
 _FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "skybox.frag.glsl"

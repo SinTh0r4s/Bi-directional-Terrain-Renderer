@@ -10,13 +10,13 @@ from typing import TYPE_CHECKING, Final
 import moderngl
 import numpy as np
 
-from claire.lighting import Lighting
 from claire.terrain.lod_selector import CullingLodSelector
 from claire.terrain.quadtree import QuadTree
 
 if TYPE_CHECKING:
     from claire.aabb import AABB
     from claire.camera import Camera
+    from claire.lighting import Lighting
     from claire.terrain.numpy_types import HeightmapData
 
 _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "terrain.vert.glsl"
