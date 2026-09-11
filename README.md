@@ -2,7 +2,6 @@
 
 ### TODO
 
-- [ ] centralize lighting config for skybox & terrain
 - [ ] ingrate frustrum culling in lod selector
 - [ ] tune lod selection formula
 - [ ] AABB don't line up with rendered terrain!?

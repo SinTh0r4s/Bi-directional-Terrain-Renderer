@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Final
 import moderngl
 import numpy as np
 
+from claire.lighting import Lighting
 from claire.terrain.lod_selector import MaxErrorLodSelector
 from claire.terrain.quadtree import QuadTree
 
@@ -143,7 +144,7 @@ class DEM:
             TEXTURE_TILE_SIZE_EXPONENT=self._texture_tile_size_exponent,
         )
 
-    def render(self, camera: Camera) -> None:
+    def render(self, camera: Camera, lighting: Lighting) -> None:
         self._draw_calls = 0
         time_start = time.time()
         for lod in range(self._max_lod_level + 1):
@@ -153,6 +154,9 @@ class DEM:
         self._program["tile_id_lookup"] = self._max_lod_level + 1
         self._program["mvp"].write((camera.proj_matrix() * camera.view_matrix()).to_bytes())
         self._program["camera_position"].write(camera.position.to_bytes())
+        self._program["terrain_default_color"].write(lighting.terrain_default_color.to_bytes())
+        self._program["sun_direction"].write(lighting.sun_direction.to_bytes())
+        self._program["sun_color"].write(lighting.sun_color.to_bytes())
         selection = self._quadtree.filter(
             MaxErrorLodSelector(camera, self._max_y_error_in_px, self._lod_hysteresis_factor)
         )

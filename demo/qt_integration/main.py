@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow
 from typing_extensions import override
 
 from claire.aabb_renderer import AabbRenderer
+from claire.lighting import Lighting
 from claire.skybox import Skybox
 from claire.terrain.dem2 import DEM
 from demo.heightmap_provider import load_heightmap
@@ -29,6 +30,7 @@ class App(QOpenGLWidget):
 
     def __init__(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
         super().__init__(*args, **kwargs)
+        self._lighting = Lighting()
         self._camera_control = CameraControl(position=glm.vec3(6945, 3320, 8110), rotation=glm.vec3(0, -30, 164))
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update)
@@ -83,7 +85,7 @@ class App(QOpenGLWidget):
         self._ctx.clear(0.5, 0.5, 0.5)
 
         self._ctx.disable(moderngl.DEPTH_TEST)
-        self._skybox.render(self._camera_control.camera)
+        self._skybox.render(self._camera_control.camera, self._lighting)
         self._ctx.enable(moderngl.DEPTH_TEST)
 
         current_time = time.time()
@@ -92,7 +94,7 @@ class App(QOpenGLWidget):
 
         self._camera_control.update(delta_time)
         try:
-            self._dem.render(self._camera_control.camera)
+            self._dem.render(self._camera_control.camera, self._lighting)
             self._aabb_renderer.render(self._camera_control.camera, self._dem.get_aabbs())
         except Exception as e:
             print(e)  # noqa: T201

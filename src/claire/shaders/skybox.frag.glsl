@@ -3,24 +3,20 @@
 uniform mat4 inv_proj;
 uniform mat4 inv_view;
 uniform ivec2 viewport_width_height;
+uniform vec3 sky_zenith_color;
+uniform vec3 sky_main_color;
+uniform vec3 sky_horizon_color;
+uniform vec3 sun_color;
+uniform vec3 sun_direction;
 
 out vec4 f_color;
-
-const vec3 SKY_ZENITH = vec3(0.075, 0.15, 0.30);
-const vec3 SKY_MIDDLE = vec3(0.22, 0.39, 0.60);
-const vec3 SKY_HORIZON = vec3(0.78, 0.74, 0.65);
 
 const float SUN_RADIUS = 1.5;
 const float SUN_HALO_POWER = 64.0;
 const float SUN_HALO_STRENGTH = 0.25;
 
-const vec3 HORIZON_COLOR = vec3(0.95, 0.72, 0.48);
 const float HORIZON_STRENGTH = 0.30;
 const float HORIZON_WIDTH = 3.0;
-
-// TODO: sync with terrain
-const vec3 SUN_DIR = normalize(vec3(-0.6, 0.8, -0.35));
-const vec3 SUN_COLOR = vec3(1.0, 0.93, 0.82);
 
 vec3 get_ray_direction() {
     vec2 ndc = vec2(
@@ -41,15 +37,15 @@ void main() {
     // Sky gradient
     vec3 sky;
 
-    sky = mix(SKY_MIDDLE, SKY_ZENITH, clamp(y, 0.0, 1.0));
+    sky = mix(sky_main_color, sky_zenith_color, clamp(y, 0.0, 1.0));
 
     // warm atmosphere
     float horizon = exp(-abs(y) * HORIZON_WIDTH);
 
-    sky += HORIZON_COLOR * horizon * HORIZON_STRENGTH;
+    sky += sky_horizon_color * horizon * HORIZON_STRENGTH;
 
     // sun disk
-    float sun_dot = dot(ray, normalize(SUN_DIR));
+    float sun_dot = dot(ray, normalize(sun_direction));
     float sun_radius = radians(SUN_RADIUS);
     float sun_disk = smoothstep(
         cos(sun_radius),
@@ -57,12 +53,12 @@ void main() {
         sun_dot
     );
 
-    sky += SUN_COLOR * sun_disk;
+    sky += sun_color * sun_disk;
 
     // sun halo
     float halo = pow(max(sun_dot, 0.0), SUN_HALO_POWER);
 
-    sky+= SUN_COLOR * halo * SUN_HALO_STRENGTH;
+    sky+= sun_color * halo * SUN_HALO_STRENGTH;
 
     f_color = vec4(sky, 1.0);
 }
