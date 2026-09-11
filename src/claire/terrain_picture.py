@@ -10,7 +10,12 @@ if TYPE_CHECKING:
 
 class TerrainPicture:
     def __init__(
-        self, ctx: moderngl.Context, width: int, height: int, image: bytes, image_format: Literal["greyscale", "color"]
+        self,
+        ctx: moderngl.Context,
+        width: int,
+        height: int,
+        image: bytes | bytearray | memoryview,
+        image_format: Literal["greyscale", "color"],
     ) -> None:
         self._texture = ctx.texture(
             size=(width, height), components=1 if image_format == "greyscale" else 4, data=image
