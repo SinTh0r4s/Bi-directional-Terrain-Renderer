@@ -95,8 +95,9 @@ class App(QOpenGLWidget):
         self._camera_control.update(delta_time)
         try:
             self._dem.render(self._camera_control.camera, self._lighting)
-            print(self._dem.stats())
-            self._aabb_renderer.render(self._camera_control.camera, self._dem.get_aabbs())
+            print(self._dem.stats())  # noqa: T201
+            # Enable for debugging if needed
+            # self._aabb_renderer.render(self._camera_control.camera, self._dem.get_aabbs())  # noqa: ERA001
         except Exception as e:
             print(e)  # noqa: T201
             raise
