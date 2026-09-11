@@ -40,8 +40,8 @@ class App(QOpenGLWidget):
     _aabb_renderer: AabbRenderer
     _skybox: Skybox
 
-    def __init__(self, *args, **kwargs) -> None:  # noqa: ANN002, ANN003
-        super().__init__(*args, **kwargs)
+    def __init__(self) -> None:
+        super().__init__()
         self._config = Config()
         self._camera_control = CameraControl(position=glm.vec3(6945, 3320, 8110), rotation=glm.vec3(0, -30, 164))
         self._timer = QTimer(self)
