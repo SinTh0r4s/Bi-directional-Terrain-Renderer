@@ -41,7 +41,7 @@ class CullingLodSelector(LodSelector[LodData]):
         if not lod_data.aabb.is_visible(self._camera):
             return "cull"
         distance = lod_data.aabb.get_shortest_distance_to(self._camera)
-        base_distance = 30
+        base_distance = 1500
         effective_distance = base_distance * (1 << lod_data.lod_level) - 100
         if distance >= effective_distance * (1 - self._hysteresis_factor):
             return "render"
