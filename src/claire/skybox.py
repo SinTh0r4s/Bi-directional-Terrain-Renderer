@@ -34,7 +34,7 @@ class Skybox:
             ).tobytes()
         )
         # fmt: on
-        self._ibo = ctx.buffer(np.array([0, 1, 2, 2, 3, 1], dtype=np.uint32).tobytes())
+        self._ibo = ctx.buffer(np.array([0, 1, 2, 2, 1, 3], dtype=np.uint32).tobytes())
         self._vao = ctx.vertex_array(
             self._program,
             [(self._vbo, "2f", "in_position")],

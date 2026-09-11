@@ -81,7 +81,7 @@ class App(QOpenGLWidget):
         fbo = self._ctx.detect_framebuffer()
         fbo.use()
 
-        self._ctx.enable(moderngl.DEPTH_TEST)
+        self._ctx.enable(moderngl.CULL_FACE)
         self._ctx.clear(0.5, 0.5, 0.5)
 
         self._ctx.disable(moderngl.DEPTH_TEST)

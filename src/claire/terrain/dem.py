@@ -37,11 +37,11 @@ def _create_index_buffer(size: int) -> np.ndarray:
     bottom_right = bottom_left + 1
 
     index_data[0::6] = top_left
-    index_data[1::6] = bottom_left
-    index_data[2::6] = top_right
+    index_data[1::6] = top_right
+    index_data[2::6] = bottom_left
     index_data[3::6] = top_right
-    index_data[4::6] = bottom_left
-    index_data[5::6] = bottom_right
+    index_data[4::6] = bottom_right
+    index_data[5::6] = bottom_left
 
     return index_data
 
