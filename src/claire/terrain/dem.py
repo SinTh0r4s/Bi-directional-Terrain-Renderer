@@ -143,6 +143,14 @@ class DEM:
         self._ibo = ctx.buffer(_create_index_buffer(self._mesh_size).tobytes())
         self._vao = ctx.vertex_array(self._program, [], index_buffer=self._ibo)
 
+    def __del__(self) -> None:
+        self._vao.release()
+        self._ibo.release()
+        self._program.release()
+        self._textures.tile_id_lookup.release()
+        for texture_array in self._textures.texture_arrays_per_lod.values():
+            texture_array.release()
+
     def _bake_vertex_shader(self, raw_string: str) -> str:
         return raw_string.format(
             LOD_COUNT=self._max_lod_level + 1,

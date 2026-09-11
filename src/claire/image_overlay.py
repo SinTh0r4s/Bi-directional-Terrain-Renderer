@@ -43,6 +43,13 @@ class ImageOverlay:
         self._aspect_ratio = width / height
         self._is_greyscale = format == "greyscale"
 
+    def __del__(self) -> None:
+        self._vao.release()
+        self._vbo.release()
+        self._ibo.release()
+        self._program.release()
+        self._texture.release()
+
     def render(self, camera: Camera) -> None:
         self._texture.use(location=0)
         self._program["image"] = 0

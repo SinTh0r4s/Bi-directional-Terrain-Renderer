@@ -55,6 +55,12 @@ class AabbRenderer:
         )
         self.color = glm.vec3(1.0, 1.0, 1.0)
 
+    def __del__(self) -> None:
+        self._vao.release()
+        self._vbo.release()
+        self._ibo.release()
+        self._program.release()
+
     def render(self, camera: Camera, aabbs: list[AABB]) -> None:
         for aabb in aabbs:
             mvp = camera.proj_matrix() * camera.view_matrix() * aabb.get_unit_cube_model_matrix()

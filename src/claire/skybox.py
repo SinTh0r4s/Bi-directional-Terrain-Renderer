@@ -40,6 +40,12 @@ class Skybox:
             index_buffer=self._ibo,
         )
 
+    def __del__(self) -> None:
+        self._vao.release()
+        self._vbo.release()
+        self._ibo.release()
+        self._program.release()
+
     def render(self, camera: Camera, lighting: Lighting) -> None:
         self._program["inv_proj"].write(glm.inverse(camera.proj_matrix()).to_bytes())
         self._program["inv_view"].write(glm.inverse(camera.view_matrix()).to_bytes())
