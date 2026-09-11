@@ -8,6 +8,8 @@ import moderngl
 import numpy as np
 from pyglm import glm
 
+from claire.moderngl_util import get_uniform
+
 if TYPE_CHECKING:
     from claire.camera import Camera
     from claire.terrain_picture import TerrainPicture
@@ -56,11 +58,11 @@ class TerrainPictureOverlay:
 
     def render(self, camera: Camera, picture: TerrainPicture) -> None:
         picture.bind_to_location(location=0)
-        self._program["image"] = 0
-        self._program["color_bias"].write(self._config.color_bias.to_bytes())
-        self._program["blend_alpha"] = self._config.blend_alpha
-        self._program["image_over_viewport_aspect_ratio"] = picture.aspect_ratio / (
+        get_uniform(self._program, "image").value = 0
+        get_uniform(self._program, "color_bias").write(self._config.color_bias.to_bytes())
+        get_uniform(self._program, "blend_alpha").value = self._config.blend_alpha
+        get_uniform(self._program, "image_over_viewport_aspect_ratio").value = picture.aspect_ratio / (
             camera.resolution.x / camera.resolution.y
         )
-        self._program["is_greyscale"] = picture.is_greyscale
+        get_uniform(self._program, "is_greyscale").value = picture.is_greyscale
         self._vao.render(mode=moderngl.TRIANGLES)

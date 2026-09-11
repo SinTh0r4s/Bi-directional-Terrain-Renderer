@@ -7,6 +7,8 @@ import moderngl
 import numpy as np
 from pyglm import glm
 
+from claire.moderngl_util import get_uniform
+
 if TYPE_CHECKING:
     from claire.aabb import AABB
     from claire.camera import Camera
@@ -64,6 +66,6 @@ class AabbRenderer:
     def render(self, camera: Camera, aabbs: list[AABB]) -> None:
         for aabb in aabbs:
             mvp = camera.proj_matrix() * camera.view_matrix() * aabb.get_unit_cube_model_matrix()
-            self._program["mvp"].write(mvp.to_bytes())
-            self._program["color"].write(self.color.to_bytes())
+            get_uniform(self._program, "mvp").write(mvp.to_bytes())
+            get_uniform(self._program, "color").write(self.color.to_bytes())
             self._vao.render(mode=moderngl.LINES)

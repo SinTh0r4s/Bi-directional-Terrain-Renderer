@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Final
 import moderngl
 import numpy as np
 
+from claire.moderngl_util import get_uniform
 from claire.terrain.lod_selector import CullingLodSelector, LodConfig
 from claire.terrain.quadtree import QuadTree
 
@@ -167,21 +168,23 @@ class DEM:
         time_start = time.time()
         for lod in range(self._config.max_lod_level + 1):
             self._textures.texture_arrays_per_lod[lod].use(location=lod)
-        self._program["heightmap"].write(np.arange(self._config.max_lod_level + 1, dtype=np.uint32).tobytes())
+        get_uniform(self._program, "heightmap").write(
+            np.arange(self._config.max_lod_level + 1, dtype=np.uint32).tobytes()
+        )
         self._textures.tile_id_lookup.use(location=self._config.max_lod_level + 1)
-        self._program["tile_id_lookup"] = self._config.max_lod_level + 1
-        self._program["mvp"].write((camera.proj_matrix() * camera.view_matrix()).to_bytes())
-        self._program["camera_position"].write(camera.position.to_bytes())
-        self._program["terrain_default_color"].write(lighting.terrain_default_color.to_bytes())
-        self._program["sun_direction"].write(lighting.sun_direction.to_bytes())
-        self._program["sun_color"].write(lighting.sun_color.to_bytes())
+        get_uniform(self._program, "tile_id_lookup").value = self._config.max_lod_level + 1
+        get_uniform(self._program, "mvp").write((camera.proj_matrix() * camera.view_matrix()).to_bytes())
+        get_uniform(self._program, "camera_position").write(camera.position.to_bytes())
+        get_uniform(self._program, "terrain_default_color").write(lighting.terrain_default_color.to_bytes())
+        get_uniform(self._program, "sun_direction").write(lighting.sun_direction.to_bytes())
+        get_uniform(self._program, "sun_color").write(lighting.sun_color.to_bytes())
         selection = self._quadtree.filter(CullingLodSelector(camera, self._lod_config))
         for chunk in selection:
             if not chunk.lod_data.aabb.is_visible(camera):
                 continue
-            self._program["lod_level"] = chunk.lod_level
-            self._program["offset"].write(chunk.terrain_offset.to_bytes())
-            self._program["neighbor_lod_nwse"].write(selection.get_neighbor_lods_nwse(chunk).to_bytes())
+            get_uniform(self._program, "lod_level").value = chunk.lod_level
+            get_uniform(self._program, "offset").write(chunk.terrain_offset.to_bytes())
+            get_uniform(self._program, "neighbor_lod_nwse").write(selection.get_neighbor_lods_nwse(chunk).to_bytes())
             self._vao.render(mode=moderngl.TRIANGLES)
             self._draw_calls += 1
         self._duration_s = time.time() - time_start
