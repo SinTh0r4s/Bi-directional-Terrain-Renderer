@@ -53,8 +53,8 @@ class MaxErrorLodSelector(LodSelector[LodData]):
 def extract_lod_aabb(full_heightmap: HeightmapData, offset: glm.ivec2, lod_stride: int, lod_width: int) -> AABB | None:
     full_height_size = lod_stride * lod_width
     full_cols, full_rows = full_heightmap.shape
-    max_col = min(full_cols, offset.x + full_height_size + 1)
-    max_row = min(full_rows, offset.y + full_height_size + 1)
+    max_col = min(full_cols, offset.x + full_height_size)
+    max_row = min(full_rows, offset.y + full_height_size)
     lod_heightmap = full_heightmap[offset.x : max_col, offset.y : max_row]
     if lod_heightmap.shape[0] == 0 or lod_heightmap.shape[1] == 0:
         return None
