@@ -115,7 +115,7 @@ class DEM:
         self,
         ctx: moderngl.Context,
         heightmap: HeightmapData,
-        max_y_error_in_px: float,
+        lod_base_distance: float,
         lod_hystersis_factor: float = 0.1,
         max_lod_level: int = 5,
         mesh_size_exponent: int = 7,
@@ -124,7 +124,7 @@ class DEM:
         if heightmap.dtype != np.float32:
             msg = "Requiring a heightmap of float32!"
             raise ValueError(msg)
-        self._max_y_error_in_px = max_y_error_in_px
+        self._lod_base_distance = lod_base_distance
         self._lod_hysteresis_factor = lod_hystersis_factor
         self._max_lod_level = max_lod_level
         self._mesh_size_exponent = mesh_size_exponent
@@ -164,7 +164,7 @@ class DEM:
         self._program["sun_direction"].write(lighting.sun_direction.to_bytes())
         self._program["sun_color"].write(lighting.sun_color.to_bytes())
         selection = self._quadtree.filter(
-            CullingLodSelector(camera, self._max_y_error_in_px, self._lod_hysteresis_factor)
+            CullingLodSelector(camera, self._lod_base_distance, self._lod_hysteresis_factor)
         )
         for chunk in selection:
             if not chunk.lod_data.aabb.is_visible(camera):

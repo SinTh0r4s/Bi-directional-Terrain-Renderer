@@ -68,7 +68,7 @@ class App(QOpenGLWidget):
         self._ctx = moderngl.create_context()
         heightmap = load_heightmap()
         try:
-            self._dem = DEM(self._ctx, heightmap, max_y_error_in_px=1.5)
+            self._dem = DEM(self._ctx, heightmap, lod_base_distance=1500)
             self._aabb_renderer = AabbRenderer(self._ctx)
             self._skybox = Skybox(self._ctx)
         except Exception as e:
