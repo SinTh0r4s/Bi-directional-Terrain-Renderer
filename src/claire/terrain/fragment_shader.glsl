@@ -13,7 +13,7 @@ uniform vec3 sun_color;
 
 const float AMBIENT_WEIGHT = 0.20;
 const float DIFFUSE_WEIGHT = 0.85;
-const float SPECULAR_WEIGHT = 0.005;
+const float SPECULAR_WEIGHT = 0.05;
 const float SHININESS = 16.0;
 
 void main() {
