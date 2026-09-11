@@ -78,6 +78,7 @@ class App(QOpenGLWidget):
     @override
     def initializeGL(self) -> None:
         self._ctx = moderngl.create_context()
+        self._ctx.disable(moderngl.DEPTH_TEST | moderngl.BLEND)
         heightmap = load_heightmap()
         try:
             self._terrain_image = load_qt_image(self._ctx, QImage(_GREYSCALE_IMAGE))
@@ -98,9 +99,7 @@ class App(QOpenGLWidget):
         self._ctx.enable(moderngl.CULL_FACE)
         self._ctx.clear(0.5, 0.5, 0.5)
 
-        self._ctx.disable(moderngl.DEPTH_TEST)
         self._skybox.render(self._camera_control.camera, self._config.lighting)
-        self._ctx.enable(moderngl.DEPTH_TEST)
 
         current_time = time.time()
         delta_time = current_time - self._last_frame_time
@@ -108,12 +107,16 @@ class App(QOpenGLWidget):
 
         self._camera_control.update(delta_time)
         try:
+            self._ctx.enable(moderngl.DEPTH_TEST)
             self._dem.render(self._camera_control.camera, self._config.lighting)
             print(self._dem.stats())  # noqa: T201
             # Enable for debugging if needed
             # self._aabb_renderer.render(self._camera_control.camera, self._dem.get_aabbs())  # noqa: ERA001
             self._ctx.disable(moderngl.DEPTH_TEST)
+
+            self._ctx.enable(moderngl.BLEND)
             self._image_overlay.render(self._camera_control.camera, self._terrain_image)
+            self._ctx.disable(moderngl.BLEND)
         except Exception as e:
             print(e)  # noqa: T201
             raise
