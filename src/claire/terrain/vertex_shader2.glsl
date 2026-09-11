@@ -106,9 +106,11 @@ void main() {{
     ivec2 mesh_pos = ivec2(0);
     ivec2 terrain_pos = get_terrain_pos(gl_VertexID, mesh_pos);
     bool valid = get_height_with_normal(terrain_pos, mesh_pos, height, normal);
-    // NaN effectively marks all triangles using this vertex to be culled
-    height = valid ? height : 0.0 / 0.0;
+
     position = vec3(terrain_pos.x, height, terrain_pos.y);
     gl_Position = mvp * vec4(position, 1.0);
+    // NaN effectively marks all triangles using this vertex to be culled - might not work on all hardware!
+    gl_Position = valid ? gl_Position : vec4(0.0 / 0.0, 0.0 / 0.0, 0.0 / 0.0, -1);
+
     height = 1.0f;
 }}
