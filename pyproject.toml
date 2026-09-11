@@ -93,10 +93,8 @@ ignore = [
     "DOC",
     "E501", # line length enforced by formatter
     "TD",
+    "TID", # QGIS requires relative imports :sad_smiley:
 ]
-
-[tool.ruff.lint.flake8-tidy-imports]
-ban-relative-imports = "all"
 
 [tool.ruff.lint.extend-per-file-ignores]
 "tests/**/test_*.py" = ["PLR2004", "S101"]

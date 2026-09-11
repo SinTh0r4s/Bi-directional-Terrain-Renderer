@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 
 from pyglm import glm
 
-from claire.terrain.lod_selector import LodData, LodSelector, create_lod_data
+from ..terrain.lod_selector import LodData, LodSelector, create_lod_data
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from claire.aabb import AABB
-    from claire.terrain.numpy_types import HeightmapData
+    from ..aabb import AABB
+    from ..terrain.numpy_types import HeightmapData
 
 
 @dataclass

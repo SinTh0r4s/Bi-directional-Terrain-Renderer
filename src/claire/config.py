@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from claire.lighting import Lighting
-from claire.terrain.lod_selector import LodConfig
-from claire.terrain_picture_overlay import TerrainPictureOverlayConfig
+from .lighting import Lighting
+from .terrain.lod_selector import LodConfig
+from .terrain_picture_overlay import TerrainPictureOverlayConfig
 
 
 @dataclass

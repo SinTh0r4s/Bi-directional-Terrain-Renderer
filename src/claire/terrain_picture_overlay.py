@@ -8,11 +8,11 @@ import moderngl
 import numpy as np
 from pyglm import glm
 
-from claire.moderngl_util import get_uniform
+from .moderngl_util import get_uniform
 
 if TYPE_CHECKING:
-    from claire.camera import Camera
-    from claire.terrain_picture import TerrainPicture
+    from .camera import Camera
+    from .terrain_picture import TerrainPicture
 
 _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "image_overlay.vert.glsl"
 _FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "image_overlay.frag.glsl"

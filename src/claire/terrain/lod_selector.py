@@ -8,11 +8,11 @@ from typing import TYPE_CHECKING, Generic, Literal, TypeVar
 import numpy as np
 from pyglm import glm
 
-from claire.aabb import AABB
+from ..aabb import AABB
 
 if TYPE_CHECKING:
-    from claire.camera import Camera
-    from claire.terrain.numpy_types import HeightmapData
+    from ..camera import Camera
+    from ..terrain.numpy_types import HeightmapData
 
 
 @dataclass

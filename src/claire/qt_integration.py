@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from claire.terrain_picture import TerrainPicture
+from .terrain_picture import TerrainPicture
 
 if TYPE_CHECKING:
     import moderngl

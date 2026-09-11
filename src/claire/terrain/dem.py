@@ -10,15 +10,15 @@ from typing import TYPE_CHECKING, Final, cast
 import moderngl
 import numpy as np
 
-from claire.moderngl_util import get_uniform
-from claire.terrain.lod_selector import CullingLodSelector, LodConfig
-from claire.terrain.quadtree import QuadTree
+from ..moderngl_util import get_uniform
+from ..terrain.lod_selector import CullingLodSelector, LodConfig
+from ..terrain.quadtree import QuadTree
 
 if TYPE_CHECKING:
-    from claire.aabb import AABB
-    from claire.camera import Camera
-    from claire.lighting import Lighting
-    from claire.terrain.numpy_types import HeightmapData
+    from ..aabb import AABB
+    from ..camera import Camera
+    from ..lighting import Lighting
+    from ..terrain.numpy_types import HeightmapData
 
 _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "terrain.vert.glsl"
 _FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "terrain.frag.glsl"

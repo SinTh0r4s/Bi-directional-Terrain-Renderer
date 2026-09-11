@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Literal
 if TYPE_CHECKING:
     import moderngl
 
-    from claire.camera import Camera
+    from .camera import Camera
 
 
 class TerrainPicture:

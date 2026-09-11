@@ -7,11 +7,11 @@ import moderngl
 import numpy as np
 from pyglm import glm
 
-from claire.moderngl_util import get_uniform
+from .moderngl_util import get_uniform
 
 if TYPE_CHECKING:
-    from claire.camera import Camera
-    from claire.lighting import Lighting
+    from .camera import Camera
+    from .lighting import Lighting
 
 _VERTEX_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "skybox.vert.glsl"
 _FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "skybox.frag.glsl"

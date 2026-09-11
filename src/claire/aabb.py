@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from pyglm import glm
 
 if TYPE_CHECKING:
-    from claire.camera import HasCameraPosition, HasViewProjMatrices
+    from .camera import HasCameraPosition, HasViewProjMatrices
 
 
 class AABB:
