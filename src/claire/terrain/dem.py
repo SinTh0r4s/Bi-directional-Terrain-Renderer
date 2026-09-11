@@ -88,11 +88,14 @@ def _upload_textures(
         texture_arrays[lod] = ctx.texture_array(
             size=(cols, rows, layers),
             components=1,
-            data=texture_data.tobytes(),
+            data=np.ascontiguousarray(texture_data.transpose(0, 2, 1)).tobytes(),
             dtype="f4",
         )
     tile_id_lookup_texture = ctx.texture(
-        size=tile_id_lookup_array.shape, components=1, data=tile_id_lookup_array.tobytes(), dtype="i4"
+        size=tile_id_lookup_array.shape,
+        components=1,
+        data=np.ascontiguousarray(tile_id_lookup_array.T).tobytes(),
+        dtype="i4",
     )
     return TerrainTextures(texture_arrays, tile_id_lookup_texture)
 
