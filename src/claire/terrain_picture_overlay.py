@@ -44,7 +44,7 @@ class TerrainPictureOverlay:
         )
         # fmt: on
         self._ibo = ctx.buffer(np.array([0, 1, 2, 2, 1, 3], dtype=np.uint32).tobytes())
-        self._vao = ctx.vertex_array(
+        self._vao = ctx._vertex_array(  # noqa: SLF001
             self._program,
             [(self._vbo, "2f 2f", "in_position", "in_uv")],
             index_buffer=self._ibo,

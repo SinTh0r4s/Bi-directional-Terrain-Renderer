@@ -146,7 +146,7 @@ class DEM:
 
         self._mesh_size = (1 << self._config.mesh_size_exponent) + 1
         self._ibo = ctx.buffer(_create_index_buffer(self._mesh_size).tobytes())
-        self._vao = ctx.vertex_array(self._program, [], index_buffer=self._ibo)
+        self._vao = ctx._vertex_array(self._program, [], index_buffer=self._ibo)  # noqa: SLF001
 
     def __del__(self) -> None:
         self._vao.release()

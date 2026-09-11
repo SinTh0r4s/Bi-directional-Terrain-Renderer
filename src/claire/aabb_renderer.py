@@ -50,7 +50,7 @@ class AabbRenderer:
             ).tobytes()
         )
         # fmt: on
-        self._vao = ctx.vertex_array(
+        self._vao = ctx._vertex_array(  # noqa: SLF001
             self._program,
             [(self._vbo, "3f", "in_position")],
             index_buffer=self._ibo,
