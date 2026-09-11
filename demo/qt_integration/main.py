@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import moderngl
@@ -9,10 +10,12 @@ from pyglm import glm
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
 from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtGui import QImage
 from typing_extensions import override
 
 from claire.aabb_renderer import AabbRenderer
 from claire.lighting import Lighting
+from claire.image_overlay import ImageOverlay
 from claire.skybox import Skybox
 from claire.terrain.dem import DEM
 from demo.heightmap_provider import load_heightmap
@@ -68,6 +71,18 @@ class App(QOpenGLWidget):
         self._ctx = moderngl.create_context()
         heightmap = load_heightmap()
         try:
+            image = QImage(
+                Path(
+                    r"C:\Users\Sinthoras\Documents\repos\Bi-directional-Terrain-Renderer\demo\overlay_picture_greyscale.jpg"
+                )
+            )
+            self._overlay_image = ImageOverlay(
+                self._ctx,
+                image.width(),
+                image.height(),
+                image.constBits(),
+                "greyscale" if image.isGrayscale() else "color",
+            )
             self._dem = DEM(self._ctx, heightmap, lod_base_distance=1500)
             self._aabb_renderer = AabbRenderer(self._ctx)
             self._skybox = Skybox(self._ctx)
@@ -98,6 +113,8 @@ class App(QOpenGLWidget):
             print(self._dem.stats())  # noqa: T201
             # Enable for debugging if needed
             # self._aabb_renderer.render(self._camera_control.camera, self._dem.get_aabbs())  # noqa: ERA001
+            self._ctx.disable(moderngl.DEPTH_TEST)
+            # self._overlay_image.render(self._camera_control.camera)
         except Exception as e:
             print(e)  # noqa: T201
             raise
