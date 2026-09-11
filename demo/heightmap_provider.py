@@ -22,7 +22,7 @@ def load_heightmap() -> HeightmapData:
         print(f"And download {_PATH.name} from page 2")  # noqa: T201
         print(f"Save it under {_PATH}")  # noqa: T201
         sys.exit(0)
-    heightmap = cast("HeightmapData", imread(_PATH))
+    heightmap = cast("HeightmapData", imread(str(_PATH)))
     if heightmap.dtype != np.float32:
         msg = "Requiring a heightmap of float32!"
         raise ValueError(msg)
