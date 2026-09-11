@@ -106,6 +106,9 @@ class Stats:
     draw_calls: int
     vertices: int
 
+    def __str__(self) -> str:
+        return f"{round(self.duration_ms)}ms    {self.draw_calls} calls    {self.vertices:_} vertices"
+
 
 class DEM:
     def __init__(
