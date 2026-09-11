@@ -1,4 +1,3 @@
-
 from typing import Any
 
 from _pytest.fixtures import fixture as fixture  # Re-export fixture safely
