@@ -41,7 +41,7 @@ bool get_connected_height(ivec2 heightmap_pos, ivec2 mesh_pos, out float height)
 
     bool activate_north = mesh_pos.y == 0;
     bool activate_south = mesh_pos.y == mesh_size - 1;
-    int lod_delta_x = lod_level - int(activate_north) * neighbor_lod_nwse.x - int(activate_south) * neighbor_lod_nwse.z - int(!(activate_north || activate_south)) * lod_level;
+    int lod_delta_x = int(activate_north) * neighbor_lod_nwse.x + int(activate_south) * neighbor_lod_nwse.z + int(!(activate_north || activate_south)) * lod_level - lod_level;
     int lod_delta_stride_x = 1 << lod_delta_x;
     int sample_lod_x1 = sample_lod.x & ~(lod_delta_stride_x - 1);
     int sample_lod_x2 = (sample_lod.x + lod_delta_stride_x - 1) & ~(lod_delta_stride_x - 1);  // identical to x1 if sample_uv.x == x1; otherwise + stride
@@ -49,7 +49,7 @@ bool get_connected_height(ivec2 heightmap_pos, ivec2 mesh_pos, out float height)
 
     bool activate_west = mesh_pos.x == 0;
     bool activate_east = mesh_pos.x == mesh_size - 1;
-    int lod_delta_y = lod_level - int(activate_west) * neighbor_lod_nwse.y - int(activate_east) * neighbor_lod_nwse.w - int(!(activate_west || activate_east)) * lod_level;
+    int lod_delta_y = int(activate_west) * neighbor_lod_nwse.y + int(activate_east) * neighbor_lod_nwse.w + int(!(activate_west || activate_east)) * lod_level - lod_level;
     int lod_delta_stride_y = 1 << lod_delta_y;
     int sample_lod_y1 = sample_lod.y & ~(lod_delta_stride_y - 1);
     int sample_lod_y2 = (sample_lod.y + lod_delta_stride_y - 1) & ~(lod_delta_stride_y - 1);  // identical to y1 if sample_uv.y == y1; otherwise + stride
