@@ -19,8 +19,8 @@ if TYPE_CHECKING:
     from claire.camera import Camera
     from claire.terrain.numpy_types import HeightmapData
 
-_VERTEX_SHADER: Final[Path] = Path(__file__).parent / "vertex_shader2.glsl"
-_FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "fragment_shader.glsl"
+_VERTEX_SHADER: Final[Path] = Path(__file__).parent / "terrain.vert.glsl"
+_FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "terrain.frag.glsl"
 
 
 def _create_index_buffer(size: int) -> np.ndarray:

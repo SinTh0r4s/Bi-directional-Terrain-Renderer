@@ -14,7 +14,7 @@ from typing_extensions import override
 from claire.aabb_renderer import AabbRenderer
 from claire.lighting import Lighting
 from claire.skybox import Skybox
-from claire.terrain.dem2 import DEM
+from claire.terrain.dem import DEM
 from demo.heightmap_provider import load_heightmap
 from demo.qt_integration.camera_control import CameraControl
 
