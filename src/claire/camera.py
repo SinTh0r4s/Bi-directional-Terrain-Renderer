@@ -32,6 +32,14 @@ class Camera(HasCameraPositionResolutionFovNearplane, HasViewProjMatrices):
         self.near_plane = 1
         self.far_plane = 25_000
 
+    def copy(self) -> Camera:
+        new_camera = Camera(self.position, self.rotation)
+        new_camera.fov_deg = self.fov_deg
+        new_camera.resolution = self.resolution
+        new_camera.near_plane = self.near_plane
+        new_camera.far_plane = self.far_plane
+        return new_camera
+
     def look_at(self, target: glm.vec3) -> None:
         direction = glm.normalize(target - self.position)
         self.rotation = glm.vec3(
