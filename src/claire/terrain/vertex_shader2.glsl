@@ -94,8 +94,8 @@ bool get_height_with_normal(ivec2 terrain_pos, ivec2 mesh_pos, out float height,
     weight_we = weight_we - int(!valid_east);
     bool valid_we = weight_we != 0;
 
-    float derivative_ns = (height_south - height_north) / weight_ns;
-    float derivative_we = (height_east - height_west) / weight_we;
+    float derivative_ns = (height_south - height_north) / (weight_ns << lod_level);
+    float derivative_we = (height_east - height_west) / (weight_we << lod_level);
     // cross product of both derivative vectors along their axes
     normal = normalize(vec3(-derivative_we, 1.0, -derivative_ns));
     height = height_center;
