@@ -190,7 +190,7 @@ class DEM:
         self._duration_s = time.time() - time_start
 
     def stats(self) -> Stats:
-        return Stats(self._duration_s * 1000, self._draw_calls, self._draw_calls * self._mesh_size)
+        return Stats(self._duration_s * 1000, self._draw_calls, self._draw_calls * self._mesh_size * self._mesh_size)
 
     def get_aabbs(self) -> list[AABB]:
         return self._quadtree.get_aabbs()
