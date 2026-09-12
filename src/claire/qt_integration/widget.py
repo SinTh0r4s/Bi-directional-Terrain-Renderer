@@ -7,19 +7,17 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, Any, override
 
-import moderngl
 from pyglm import glm
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QImage, QKeyEvent, QMouseEvent, QOffscreenSurface, QOpenGLContext
+from PyQt6.QtGui import QImage, QKeyEvent, QMouseEvent
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
 from claire.config import Config
-from claire.engine import Engine, HasContext
+from claire.engine import Engine
 from claire.qt_integration.camera_control import CameraControl
 from claire.terrain.dem import DemConfig
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
     from pathlib import Path
 
     from claire.terrain.numpy_types import HeightmapData
@@ -30,44 +28,8 @@ def _load_qt_image(engine: Engine, image: QImage) -> TerrainPicture:
     # Do some legacy Qt magic
     ptr = image.bits()
     ptr.setsize(image.sizeInBytes())
-    return engine.load_picture(image.width(), image.height(), ptr, "greyscale" if image.isGrayscale() else "color")  # pyright: ignore[reportArgumentType]
-
-
-class _ContextContainer(HasContext):
-    def __init__(self, ctx: moderngl.Context, surface: QOffscreenSurface, qt_context: QOpenGLContext) -> None:
-        self._ctx = ctx
-        self._surface = surface
-        self._qt_ctx = qt_context
-
-    @property
-    def ctx(self) -> moderngl.Context:
-        return self._ctx
-
-    def make_current(self) -> None:
-        self._qt_ctx.makeCurrent(self._surface)
-
-
-def _create_background_context(main_qt_context: QOpenGLContext | None) -> Callable[[], HasContext]:
-    if main_qt_context is None:
-        msg = "Can only create a background context if there is a currently active main context"
-        raise RuntimeError(msg)
-    main_format = main_qt_context.format()
-
-    def create_context() -> HasContext:
-        background_qt_context = QOpenGLContext()
-        background_qt_context.setFormat(main_format)
-        background_qt_context.setShareContext(main_qt_context)
-        background_qt_context.create()
-
-        surface = QOffscreenSurface()
-        surface.setFormat(main_format)
-        surface.create()
-        background_qt_context.makeCurrent(surface)
-
-        background_ctx = moderngl.create_context()
-        return _ContextContainer(background_ctx, surface, background_qt_context)
-
-    return create_context
+    data = bytes(ptr)  # pyright: ignore[reportArgumentType]
+    return engine.load_picture(image.width(), image.height(), data, "greyscale" if image.isGrayscale() else "color")
 
 
 class TerrainViewer(QOpenGLWidget):
@@ -119,7 +81,7 @@ class TerrainViewer(QOpenGLWidget):
     @override
     def initializeGL(self) -> None:
         try:
-            self._engine = Engine(self._config, _create_background_context(QOpenGLContext.currentContext()))
+            self._engine = Engine(self._config)
         except Exception as e:
             print(e)  # noqa: T201
             raise

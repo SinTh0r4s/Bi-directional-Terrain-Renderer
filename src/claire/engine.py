@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from threading import Thread
 from typing import TYPE_CHECKING, Literal
 
 import moderngl
@@ -13,7 +11,6 @@ from .terrain_picture import TerrainPicture
 from .terrain_picture_overlay import TerrainPictureOverlay
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
 
     from .camera import Camera
     from .config import Config
