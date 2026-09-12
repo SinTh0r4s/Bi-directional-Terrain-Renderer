@@ -20,44 +20,15 @@ if TYPE_CHECKING:
     from .terrain.numpy_types import HeightmapData
 
 
-class HasContext(ABC):
-    @property
-    @abstractmethod
-    def ctx(self) -> moderngl.Context: ...
-
-
-class Background(Thread):
-    _ctx_container: HasContext
-
-    def __init__(self, acquire_background_context: Callable[[], HasContext]) -> None:
-        self._acquire_background_context = acquire_background_context
-        self._stop: bool = False
-
-    @property
-    def _ctx(self) -> moderngl.Context:
-        return self._ctx
-
-    def close(self) -> None:
-        self._stop = True
-        self.join(timeout=1)
-
-    def run(self) -> None:
-        self._ctx_container = self._acquire_background_context()
-        while not self._stop:
-            pass
-
-
 class Engine:
-    def __init__(self, config: Config, acquire_background_context: Callable[[], HasContext]) -> None:
+    def __init__(self, config: Config) -> None:
         self._config = config
+        self._dem: DEM | None = None
         self._pictures: list[TerrainPicture] = []
         self._active_picture: TerrainPicture | None = None
         self._ctx = moderngl.create_context()
-        self._background = Background(acquire_background_context)
-        # self._background.start()  # TODO
         self._ctx.disable(moderngl.DEPTH_TEST | moderngl.BLEND)
         self._image_overlay = TerrainPictureOverlay(self._ctx)
-        self._dem: DEM | None = None
         self._aabb_renderer = AabbRenderer(self._ctx)
         self._skybox = Skybox(self._ctx)
 
