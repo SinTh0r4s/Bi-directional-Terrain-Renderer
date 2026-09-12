@@ -3,12 +3,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from pyglm import glm
-from PySide6.QtCore import QPointF, Qt
+from PyQt6.QtCore import QPointF, Qt
 
 from claire.camera import Camera
 
 if TYPE_CHECKING:
-    from PySide6.QtGui import QKeyEvent, QMouseEvent
+    from PyQt6.QtGui import QKeyEvent, QMouseEvent
 
 _KEY_LEFT = Qt.Key.Key_A
 _KEY_RIGHT = Qt.Key.Key_D

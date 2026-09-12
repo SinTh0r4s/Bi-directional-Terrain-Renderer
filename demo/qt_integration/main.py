@@ -3,15 +3,14 @@ from __future__ import annotations
 import sys
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, Any, override
 
 import moderngl
 from pyglm import glm
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QImage
-from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QApplication, QMainWindow
-from typing_extensions import override
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QImage, QOpenGLContext, QOffscreenSurface
+from PyQt6.QtOpenGLWidgets import QOpenGLWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow
 
 from claire.aabb_renderer import AabbRenderer
 from claire.config import Config
@@ -23,7 +22,7 @@ from demo.heightmap_provider import load_heightmap
 from demo.qt_integration.camera_control import CameraControl
 
 if TYPE_CHECKING:
-    from PySide6.QtGui import QKeyEvent, QMouseEvent
+    from PyQt6.QtGui import QKeyEvent, QMouseEvent
 
 
 _GREYSCALE_IMAGE: Final[Path] = Path(
@@ -40,39 +39,44 @@ class App(QOpenGLWidget):
     _aabb_renderer: AabbRenderer
     _skybox: Skybox
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
         self._config = Config()
         self._camera_control = CameraControl(position=glm.vec3(6945, 3320, 8110), rotation=glm.vec3(0, -30, 164))
         self._timer = QTimer(self)
-        self._timer.timeout.connect(self.update)
+        self._timer.timeout.connect(self.update)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
         self._timer.start(30)  # ~30 FPS
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         # Would fire mouseMoveEvent even if no mouse button is down: self.setMouseTracking(True)
         self._last_frame_time = time.time()
 
     @override
-    def mousePressEvent(self, event: QMouseEvent) -> None:
-        self._camera_control.mouse_press_event(event)
+    def mousePressEvent(self, a0: QMouseEvent | None) -> None:
+        if a0 is not None:
+            self._camera_control.mouse_press_event(a0)
 
     @override
-    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        self._camera_control.mouse_release_event(event)
+    def mouseReleaseEvent(self, a0: QMouseEvent | None) -> None:
+        if a0 is not None:
+            self._camera_control.mouse_release_event(a0)
 
     @override
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        self._camera_control.mouse_move_event(event)
+    def mouseMoveEvent(self, a0: QMouseEvent | None) -> None:
+        if a0 is not None:
+            self._camera_control.mouse_move_event(a0)
 
     @override
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        self._camera_control.key_press_event(event)
+    def keyPressEvent(self, a0: QKeyEvent | None) -> None:
+        if a0 is not None:
+            self._camera_control.key_press_event(a0)
 
     @override
-    def keyReleaseEvent(self, event: QKeyEvent) -> None:
-        self._camera_control.key_release_event(event)
+    def keyReleaseEvent(self, a0: QKeyEvent | None) -> None:
+        if a0 is not None:
+            self._camera_control.key_release_event(a0)
 
     @override
-    def resizeGL(self, w: int, h: int, /) -> None:
+    def resizeGL(self, w: int, h: int) -> None:
         self._camera_control.resize_gl(w, h)
 
     @override
@@ -81,7 +85,7 @@ class App(QOpenGLWidget):
         self._ctx.disable(moderngl.DEPTH_TEST | moderngl.BLEND)
         heightmap = load_heightmap()
         try:
-            self._terrain_image = load_qt_image(self._ctx, QImage(_GREYSCALE_IMAGE))
+            self._terrain_image = load_qt_image(self._ctx, QImage(str(_GREYSCALE_IMAGE)))
             self._image_overlay = TerrainPictureOverlay(self._ctx, self._config.picture_overlay)
             self._dem = DEM(self._ctx, heightmap, DemConfig(), self._config.lod_config)
             self._aabb_renderer = AabbRenderer(self._ctx)

@@ -10,10 +10,11 @@ from .terrain_picture import TerrainPicture
 
 if TYPE_CHECKING:
     import moderngl
-    from PySide6.QtGui import QImage
+    from PyQt6.QtGui import QImage
 
 
 def load_qt_image(ctx: moderngl.Context, image: QImage) -> TerrainPicture:
-    return TerrainPicture(
-        ctx, image.width(), image.height(), image.constBits(), "greyscale" if image.isGrayscale() else "color"
-    )
+    # Do some legacy Qt magic
+    ptr = image.bits()
+    ptr.setsize(image.sizeInBytes())
+    return TerrainPicture(ctx, image.width(), image.height(), ptr, "greyscale" if image.isGrayscale() else "color")
