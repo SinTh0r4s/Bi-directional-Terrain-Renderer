@@ -5,7 +5,7 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Final, cast
+from typing import TYPE_CHECKING, Final
 
 import moderngl
 import numpy as np
@@ -102,7 +102,7 @@ def _upload_textures(
             dtype="f4",
         )
     tile_id_lookup_texture = ctx.texture(
-        size=cast("tuple[int, int]", tile_id_lookup_array.shape),
+        size=tile_id_lookup_array.shape,
         components=1,
         data=np.ascontiguousarray(tile_id_lookup_array.T).tobytes(),
         dtype="i4",

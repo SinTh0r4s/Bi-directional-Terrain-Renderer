@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import math
-from abc import ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, Literal, TypeVar
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 from pyglm import glm
@@ -27,11 +27,9 @@ class LodData:
     lod_level: int
 
 
-_T = TypeVar("_T")
-
-
-class LodSelector(ABC, Generic[_T]):
-    def should_refine(self, lod_data: _T) -> Literal["cull", "refine", "render", "use_previous"]: ...
+class LodSelector[T](ABC):
+    @abstractmethod
+    def should_refine(self, lod_data: T) -> Literal["cull", "refine", "render", "use_previous"]: ...
 
 
 class CullingLodSelector(LodSelector[LodData]):

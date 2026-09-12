@@ -25,8 +25,7 @@ class TerrainPictureOverlayConfig:
 
 
 class TerrainPictureOverlay:
-    def __init__(self, ctx: moderngl.Context, config: TerrainPictureOverlayConfig) -> None:
-        self._config = config
+    def __init__(self, ctx: moderngl.Context) -> None:
         self._program = ctx.program(
             vertex_shader=_VERTEX_SHADER.read_text(encoding="utf-8"),
             fragment_shader=_FRAGMENT_SHADER.read_text(encoding="utf-8"),
@@ -56,11 +55,11 @@ class TerrainPictureOverlay:
         self._ibo.release()
         self._program.release()
 
-    def render(self, camera: Camera, picture: TerrainPicture) -> None:
+    def render(self, camera: Camera, picture: TerrainPicture, config: TerrainPictureOverlayConfig) -> None:
         picture.bind_to_location(location=0)
         get_uniform(self._program, "image").value = 0
-        get_uniform(self._program, "color_bias").write(self._config.color_bias.to_bytes())
-        get_uniform(self._program, "blend_alpha").value = self._config.blend_alpha
+        get_uniform(self._program, "color_bias").write(config.color_bias.to_bytes())
+        get_uniform(self._program, "blend_alpha").value = config.blend_alpha
         get_uniform(self._program, "image_over_viewport_aspect_ratio").value = picture.aspect_ratio / (
             camera.resolution.x / camera.resolution.y
         )

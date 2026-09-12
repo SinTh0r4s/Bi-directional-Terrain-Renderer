@@ -1,3 +1,7 @@
+"""
+ONLY USE THIS MODULE IF YOU ARE ALREADY USING QT!
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

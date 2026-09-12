@@ -18,7 +18,7 @@ dev = [
     "setuptools<82", # older versions of PyCharm require it for IDE interactions
     "versioningit>=3.3.0",
 ]
-demo = [
+qt = [
     "scikit-image==0.26.0",
     "pyqt6>=6.11.0",
 ]
