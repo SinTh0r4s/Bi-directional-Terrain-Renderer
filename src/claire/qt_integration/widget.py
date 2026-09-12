@@ -34,33 +34,38 @@ def _load_qt_image(engine: Engine, image: QImage) -> TerrainPicture:
 
 
 class _ContextContainer(HasContext):
-    def __init__(self, ctx: moderngl.Context, surface: QOffscreenSurface) -> None:
+    def __init__(self, ctx: moderngl.Context, surface: QOffscreenSurface, qt_context: QOpenGLContext) -> None:
         self._ctx = ctx
-        self._surface_keep_alive = surface
+        self._surface = surface
+        self._qt_ctx = qt_context
 
     @property
     def ctx(self) -> moderngl.Context:
         return self._ctx
+
+    def make_current(self) -> None:
+        self._qt_ctx.makeCurrent(self._surface)
 
 
 def _create_background_context(main_qt_context: QOpenGLContext | None) -> Callable[[], HasContext]:
     if main_qt_context is None:
         msg = "Can only create a background context if there is a currently active main context"
         raise RuntimeError(msg)
+    main_format = main_qt_context.format()
 
     def create_context() -> HasContext:
         background_qt_context = QOpenGLContext()
-        background_qt_context.setFormat(main_qt_context.format())
+        background_qt_context.setFormat(main_format)
         background_qt_context.setShareContext(main_qt_context)
         background_qt_context.create()
 
         surface = QOffscreenSurface()
-        surface.setFormat(background_qt_context.format())
+        surface.setFormat(main_format)
         surface.create()
         background_qt_context.makeCurrent(surface)
 
-        background_ctx = moderngl.create_context(share=True)
-        return _ContextContainer(background_ctx, surface)
+        background_ctx = moderngl.create_context()
+        return _ContextContainer(background_ctx, surface, background_qt_context)
 
     return create_context
 
