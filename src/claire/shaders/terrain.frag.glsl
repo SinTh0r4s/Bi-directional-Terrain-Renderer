@@ -1,6 +1,5 @@
 #version 330
 
-in float height;
 in vec3 normal;
 in vec3 position;
 
