@@ -9,6 +9,8 @@ uniform vec3 sky_horizon_color;
 uniform vec3 sun_color;
 uniform vec3 sun_direction;
 
+in vec2 uv;
+
 out vec4 f_color;
 
 const float SUN_RADIUS = 1.5;
