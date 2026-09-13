@@ -12,16 +12,16 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QImage, QKeyEvent, QMouseEvent
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
-from claire.config import Config
-from claire.engine import Engine
-from claire.qt_integration.camera_control import CameraControl
-from claire.terrain.dem import DemConfig
+from ..engine import Engine
+from ..terrain.dem import DemConfig
+from .camera_control import CameraControl
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from claire.terrain.numpy_types import HeightmapData
-    from claire.terrain_picture import TerrainPicture
+    from ..config import Config
+    from ..terrain.numpy_types import HeightmapData
+    from ..terrain_picture import TerrainPicture
 
 
 def _load_qt_image(engine: Engine, image: QImage) -> TerrainPicture:
