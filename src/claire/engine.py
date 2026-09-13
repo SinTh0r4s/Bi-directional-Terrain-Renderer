@@ -11,7 +11,6 @@ from .terrain_picture import TerrainPicture
 from .terrain_picture_overlay import TerrainPictureOverlay
 
 if TYPE_CHECKING:
-
     from .camera import Camera
     from .config import Config
     from .terrain.numpy_types import HeightmapData
