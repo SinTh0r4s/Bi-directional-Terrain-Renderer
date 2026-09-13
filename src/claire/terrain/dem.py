@@ -4,8 +4,7 @@ import math
 import time
 from collections import defaultdict
 from dataclasses import dataclass
-from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import moderngl
 import numpy as np
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
     from ..camera import Camera
     from ..lighting import Lighting
     from ..terrain.numpy_types import HeightmapData
-
+    from ..terrain_picture import TerrainPicture
 
 
 @dataclass(frozen=True)
@@ -119,6 +118,41 @@ class Stats:
         return f"{round(self.duration_ms)}ms    {self.draw_calls} calls    {self.vertices:_} vertices"
 
 
+class _DemProgram:
+    def __init__(self, ctx: moderngl.Context, name: str, constants: list[BakeConstant], ibo: moderngl.Buffer) -> None:
+        self._program = load_program(ctx, (name, constants))
+        self._vao = ctx._vertex_array(self._program, [], index_buffer=ibo)  # noqa: SLF001
+
+    def release(self) -> None:
+        self._vao.release()
+        self._program.release()
+
+    def get_uniform(self, label: str) -> moderngl.Uniform:
+        return get_uniform(self._program, label)
+
+    def render(self) -> None:
+        self._vao.render(mode=moderngl.TRIANGLES)
+
+
+class _DemPrograms:
+    def __init__(self, ctx: moderngl.Context, config: DemConfig) -> None:
+        self.connecting_mesh_size = (1 << config.mesh_size_exponent) + 1
+        self._connecting_mesh_ibo = ctx.buffer(_create_index_buffer(self.connecting_mesh_size).tobytes())
+
+        constants = [
+            BakeConstant("LOD_COUNT", "int", config.max_lod_level + 1),
+            BakeConstant("MESH_SIZE_EXPONENT", "int", config.mesh_size_exponent),
+            BakeConstant("TEXTURE_TILE_SIZE_EXPONENT", "int", config.texture_tile_size_exponent),
+        ]
+        self.depth_program = _DemProgram(ctx, "terrain_depth", constants, self._connecting_mesh_ibo)
+        self.terrain_program = _DemProgram(ctx, "terrain", constants, self._connecting_mesh_ibo)
+
+    def release(self) -> None:
+        self.depth_program.release()
+        self.terrain_program.release()
+        self._connecting_mesh_ibo.release()
+
+
 class DEM:
     def __init__(
         self, ctx: moderngl.Context, heightmap: HeightmapData, config: DemConfig, lod_config: LodConfig
@@ -137,54 +171,84 @@ class DEM:
             1 << self._config.texture_tile_size_exponent,
             self._config.max_lod_level,
         )
-
-        constants = [
-            BakeConstant("LOD_COUNT", "int", self._config.max_lod_level + 1),
-            BakeConstant("MESH_SIZE_EXPONENT", "int", self._config.mesh_size_exponent),
-            BakeConstant("TEXTURE_TILE_SIZE_EXPONENT", "int", self._config.texture_tile_size_exponent),
-        ]
-        self._program = load_program(ctx, ("terrain", constants))
-
-        self._mesh_size = (1 << self._config.mesh_size_exponent) + 1
-        self._ibo = ctx.buffer(_create_index_buffer(self._mesh_size).tobytes())
-        self._vao = ctx._vertex_array(self._program, [], index_buffer=self._ibo)  # noqa: SLF001
+        self._programs = _DemPrograms(ctx, config)
 
     def __del__(self) -> None:
-        self._vao.release()
-        self._ibo.release()
-        self._program.release()
-        self._textures.tile_id_lookup.release()
-        for texture_array in self._textures.texture_arrays_per_lod.values():
-            texture_array.release()
+        self._programs.release()
+        self._textures.release()
 
     def render(self, camera: Camera, lighting: Lighting) -> None:
         self._draw_calls = 0
         time_start = time.time()
         for lod in range(self._config.max_lod_level + 1):
             self._textures.texture_arrays_per_lod[lod].use(location=lod)
-        get_uniform(self._program, "heightmap").write(
+        self._programs.terrain_program.get_uniform("heightmap").write(
             np.arange(self._config.max_lod_level + 1, dtype=np.uint32).tobytes()
         )
         self._textures.tile_id_lookup.use(location=self._config.max_lod_level + 1)
-        get_uniform(self._program, "tile_id_lookup").value = self._config.max_lod_level + 1
-        get_uniform(self._program, "mvp").write((camera.proj_matrix() * camera.view_matrix()).to_bytes())
-        get_uniform(self._program, "camera_position").write(camera.position.to_bytes())
-        get_uniform(self._program, "terrain_default_color").write(lighting.terrain_default_color.to_bytes())
-        get_uniform(self._program, "sun_direction").write(lighting.sun_direction.to_bytes())
-        get_uniform(self._program, "sun_color").write(lighting.sun_color.to_bytes())
+        self._programs.terrain_program.get_uniform("tile_id_lookup").value = self._config.max_lod_level + 1
+        self._programs.terrain_program.get_uniform("mvp").write(
+            (camera.proj_matrix() * camera.view_matrix()).to_bytes()
+        )
+        self._programs.terrain_program.get_uniform("camera_position").write(camera.position.to_bytes())
+        self._programs.terrain_program.get_uniform("terrain_default_color").write(
+            lighting.terrain_default_color.to_bytes()
+        )
+        self._programs.terrain_program.get_uniform("sun_direction").write(lighting.sun_direction.to_bytes())
+        self._programs.terrain_program.get_uniform("sun_color").write(lighting.sun_color.to_bytes())
         selection = self._quadtree.filter(CullingLodSelector(camera, self._lod_config))
         for chunk in selection:
             if not chunk.lod_data.aabb.is_visible(camera):
                 continue
-            get_uniform(self._program, "lod_level").value = chunk.lod_level
-            get_uniform(self._program, "offset").write(chunk.terrain_offset.to_bytes())
-            get_uniform(self._program, "neighbor_lod_nwse").write(selection.get_neighbor_lods_nwse(chunk).to_bytes())
-            self._vao.render(mode=moderngl.TRIANGLES)
+            self._programs.terrain_program.get_uniform("lod_level").value = chunk.lod_level
+            self._programs.terrain_program.get_uniform("offset").write(chunk.terrain_offset.to_bytes())
+            self._programs.terrain_program.get_uniform("neighbor_lod_nwse").write(
+                selection.get_neighbor_lods_nwse(chunk).to_bytes()
+            )
+            self._programs.terrain_program.render()
             self._draw_calls += 1
         self._duration_s = time.time() - time_start
 
     def stats(self) -> Stats:
-        return Stats(self._duration_s * 1000, self._draw_calls, self._draw_calls * self._mesh_size * self._mesh_size)
+        return Stats(
+            self._duration_s * 1000,
+            self._draw_calls,
+            self._draw_calls * self._programs.connecting_mesh_size * self._programs.connecting_mesh_size,
+        )
 
     def get_aabbs(self) -> list[AABB]:
         return self._quadtree.get_aabbs()
+
+    def render_depth_map(self, ctx: moderngl.Context, camera: Camera) -> tuple[moderngl.Texture, moderngl.Framebuffer]:
+        depth = ctx.depth_texture((camera.resolution.x, camera.resolution.y))
+        depth.compare_func = "<"
+        depth.filter = moderngl.NEAREST, moderngl.NEAREST
+        depth_fbo = ctx.framebuffer(depth_attachment=depth)
+
+        depth_fbo.use()
+        ctx.clear(depth=1.0)
+        ctx.enable(moderngl.DEPTH_TEST)
+
+        self._draw_calls = 0
+        time_start = time.time()
+        for lod in range(self._config.max_lod_level + 1):
+            self._textures.texture_arrays_per_lod[lod].use(location=lod)
+        self._programs.depth_program.get_uniform("heightmap").write(
+            np.arange(self._config.max_lod_level + 1, dtype=np.uint32).tobytes()
+        )
+        self._textures.tile_id_lookup.use(location=self._config.max_lod_level + 1)
+        self._programs.depth_program.get_uniform("tile_id_lookup").value = self._config.max_lod_level + 1
+        self._programs.depth_program.get_uniform("mvp").write((camera.proj_matrix() * camera.view_matrix()).to_bytes())
+        selection = self._quadtree.filter(CullingLodSelector(camera, self._lod_config))
+        for chunk in selection:
+            if not chunk.lod_data.aabb.is_visible(camera):
+                continue
+            self._programs.depth_program.get_uniform("lod_level").value = chunk.lod_level
+            self._programs.depth_program.get_uniform("offset").write(chunk.terrain_offset.to_bytes())
+            self._programs.depth_program.get_uniform("neighbor_lod_nwse").write(
+                selection.get_neighbor_lods_nwse(chunk).to_bytes()
+            )
+            self._programs.depth_program.render()
+            self._draw_calls += 1
+        self._duration_s = time.time() - time_start
+        return depth, depth_fbo
