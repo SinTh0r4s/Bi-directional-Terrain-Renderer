@@ -1,42 +1,41 @@
 #version 330
 
-// double curly brackets to escape for string baking!
-// baked constants:
-// LOD_COUNT
-// MESH_SIZE_EXPONENT
-// TEXTURE_TILE_SIZE_EXPONENT
+#bake LOD_COUNT
+#bake MESH_SIZE_EXPONENT
+#bake TEXTURE_TILE_SIZE_EXPONENT
+
 
 out float height;
 out vec3 normal;
 out vec3 position;
 
-uniform sampler2DArray heightmap[{LOD_COUNT}];
+uniform sampler2DArray heightmap[LOD_COUNT];
 uniform isampler2D tile_id_lookup;
 uniform mat4 mvp;
 uniform int lod_level;
 uniform ivec2 offset;
 uniform ivec4 neighbor_lod_nwse;
 
-const int mesh_size = (1 << {MESH_SIZE_EXPONENT}) + 1;
+const int mesh_size = (1 << MESH_SIZE_EXPONENT) + 1;
 
-ivec2 get_terrain_pos(int vertex_id, out ivec2 mesh_pos) {{
+ivec2 get_terrain_pos(int vertex_id, out ivec2 mesh_pos) {
     mesh_pos = ivec2(vertex_id / mesh_size, vertex_id % mesh_size);
     return offset + (mesh_pos << lod_level);
-}}
+}
 
-bool get_height(ivec2 heightmap_pos, out float height) {{
-    ivec2 tile_coord = heightmap_pos >> {TEXTURE_TILE_SIZE_EXPONENT};
+bool get_height(ivec2 heightmap_pos, out float height) {
+    ivec2 tile_coord = heightmap_pos >> TEXTURE_TILE_SIZE_EXPONENT;
     int tile_id = texelFetch(tile_id_lookup, tile_coord, 0).r;
     bool valid_tile = tile_id != -1;
     tile_id = int(valid_tile) * tile_id;  // 0 is fallback to keep pipeline alive
-    ivec2 in_tile_pos = heightmap_pos - (tile_coord << {TEXTURE_TILE_SIZE_EXPONENT});
+    ivec2 in_tile_pos = heightmap_pos - (tile_coord << TEXTURE_TILE_SIZE_EXPONENT);
     ivec3 sample_uv = ivec3(in_tile_pos >> lod_level, tile_id);
     height = texelFetch(heightmap[lod_level], sample_uv, 0).r;
     bool valid_height = height > 0;
     return valid_tile && valid_height;
-}}
+}
 
-bool get_connected_height(ivec2 heightmap_pos, ivec2 mesh_pos, out float height) {{
+bool get_connected_height(ivec2 heightmap_pos, ivec2 mesh_pos, out float height) {
     ivec2 sample_lod = heightmap_pos >> lod_level;
 
     bool activate_north = mesh_pos.y == 0;
@@ -66,9 +65,9 @@ bool get_connected_height(ivec2 heightmap_pos, ivec2 mesh_pos, out float height)
     float mix = max(mix_x, mix_y);  // only >0 if interpolation is actually happening for the axis & axis are interpolating exclusively
     height = (1 - mix) * height_1 + mix * height_2;
     return valid_1 && valid_2;
-}}
+}
 
-bool get_height_with_normal(ivec2 terrain_pos, ivec2 mesh_pos, out float height, out vec3 normal) {{
+bool get_height_with_normal(ivec2 terrain_pos, ivec2 mesh_pos, out float height, out vec3 normal) {
     float height_center;
     bool valid_center = get_connected_height(terrain_pos, mesh_pos, height_center);
 
@@ -100,9 +99,9 @@ bool get_height_with_normal(ivec2 terrain_pos, ivec2 mesh_pos, out float height,
     normal = normalize(vec3(-derivative_we, 1.0, -derivative_ns));
     height = height_center;
     return valid_center && valid_ns && valid_we;
-}}
+}
 
-void main() {{
+void main() {
     ivec2 mesh_pos;
     ivec2 terrain_pos = get_terrain_pos(gl_VertexID, mesh_pos);
     bool valid = get_height_with_normal(terrain_pos, mesh_pos, height, normal);
@@ -113,4 +112,4 @@ void main() {{
     gl_Position = valid ? gl_Position : vec4(0.0 / 0.0, 0.0 / 0.0, 0.0 / 0.0, -1);
 
     height = 1.0f;
-}}
+}

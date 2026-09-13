@@ -11,6 +11,7 @@ import moderngl
 import numpy as np
 
 from ..moderngl_util import get_uniform
+from ..shaders import BakeConstant, load_program
 from ..terrain.lod_selector import CullingLodSelector, LodConfig
 from ..terrain.quadtree import QuadTree
 
@@ -20,8 +21,6 @@ if TYPE_CHECKING:
     from ..lighting import Lighting
     from ..terrain.numpy_types import HeightmapData
 
-_VERTEX_SHADER: Final[Path] = Path(__file__).parent / "terrain.vert.glsl"
-_FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "terrain.frag.glsl"
 
 
 @dataclass(frozen=True)
@@ -139,10 +138,12 @@ class DEM:
             self._config.max_lod_level,
         )
 
-        self._program = ctx.program(
-            vertex_shader=self._bake_vertex_shader(_VERTEX_SHADER.read_text(encoding="utf-8")),
-            fragment_shader=_FRAGMENT_SHADER.read_text(encoding="utf-8"),
-        )
+        constants = [
+            BakeConstant("LOD_COUNT", "int", self._config.max_lod_level + 1),
+            BakeConstant("MESH_SIZE_EXPONENT", "int", self._config.mesh_size_exponent),
+            BakeConstant("TEXTURE_TILE_SIZE_EXPONENT", "int", self._config.texture_tile_size_exponent),
+        ]
+        self._program = load_program(ctx, ("terrain", constants))
 
         self._mesh_size = (1 << self._config.mesh_size_exponent) + 1
         self._ibo = ctx.buffer(_create_index_buffer(self._mesh_size).tobytes())
@@ -155,13 +156,6 @@ class DEM:
         self._textures.tile_id_lookup.release()
         for texture_array in self._textures.texture_arrays_per_lod.values():
             texture_array.release()
-
-    def _bake_vertex_shader(self, raw_string: str) -> str:
-        return raw_string.format(
-            LOD_COUNT=self._config.max_lod_level + 1,
-            MESH_SIZE_EXPONENT=self._config.mesh_size_exponent,
-            TEXTURE_TILE_SIZE_EXPONENT=self._config.texture_tile_size_exponent,
-        )
 
     def render(self, camera: Camera, lighting: Lighting) -> None:
         self._draw_calls = 0

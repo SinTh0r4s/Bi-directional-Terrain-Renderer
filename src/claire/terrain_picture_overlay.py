@@ -1,21 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 import moderngl
 import numpy as np
 from pyglm import glm
 
 from .moderngl_util import get_uniform
+from .shaders import load_program
 
 if TYPE_CHECKING:
     from .camera import Camera
     from .terrain_picture import TerrainPicture
-
-_VERTEX_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "image_overlay.vert.glsl"
-_FRAGMENT_SHADER: Final[Path] = Path(__file__).parent / "shaders" / "image_overlay.frag.glsl"
 
 
 @dataclass
@@ -26,10 +23,7 @@ class TerrainPictureOverlayConfig:
 
 class TerrainPictureOverlay:
     def __init__(self, ctx: moderngl.Context) -> None:
-        self._program = ctx.program(
-            vertex_shader=_VERTEX_SHADER.read_text(encoding="utf-8"),
-            fragment_shader=_FRAGMENT_SHADER.read_text(encoding="utf-8"),
-        )
+        self._program = load_program(ctx, "image_overlay")
         # fmt: off
         self._vbo = ctx.buffer(
             np.array(
