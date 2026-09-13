@@ -46,16 +46,11 @@ class _ShaderSource:
     def _include_match_handler(self, match: re.Match[str]) -> str:
         filename = match.group("name")
         if filename in self._imports:
-            file_id = self._imports[filename]
-        else:
-            file_id = len(self._imports) + self._file_id_start
-            self._imports[filename] = file_id
+            return ""
+        file_id = len(self._imports) + self._file_id_start
+        self._imports[filename] = file_id
         current_line = match.string.count("\n", 0, match.start())
-        return (
-            f"#line {0} {file_id}\n"
-            + _read_safe(_assets / filename)
-            + f"#line {current_line + 1} {self._file_id_start}"
-        )
+        return f"#line {1} {file_id}\n" + self._load(filename) + f"#line {current_line + 1} {self._file_id_start}"
 
     def _bake_match_handler(self, match: re.Match[str]) -> str:
         key = match.group("name")
@@ -66,14 +61,16 @@ class _ShaderSource:
 
     def _version_match_handler(self, match: re.Match[str]) -> str:
         version = match.group("version")
-        return f"{version}\n#line 1 {self._file_id_start}"
+        return f"{version}\n#line 0 {self._file_id_start}"
 
-    def load(self) -> tuple[str, dict[int, str]]:
-        source = _read_safe(_assets / self._filename)
+    def _load(self, filename: str) -> str:
+        source = _read_safe(_assets / filename)
         source = _version_regex.sub(self._version_match_handler, source)
         source = _include_regex.sub(self._include_match_handler, source)
-        source = _bake_regex.sub(self._bake_match_handler, source)
-        return source, {file_id: filename for filename, file_id in self._imports.items()}
+        return _bake_regex.sub(self._bake_match_handler, source)
+
+    def load(self) -> tuple[str, dict[int, str]]:
+        return self._load(self._filename), {file_id: filename for filename, file_id in self._imports.items()}
 
 
 def load_program(
