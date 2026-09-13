@@ -8,6 +8,7 @@ import numpy as np
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from skimage.io import imread
 
+from claire.config import Config
 from claire.qt_integration.widget import TerrainViewer
 
 if TYPE_CHECKING:
@@ -36,11 +37,16 @@ def _load_heightmap() -> HeightmapData:
     return heightmap
 
 
+_CONFIG: Final[Config] = Config()
+_CONFIG.print_stats = print
+_CONFIG.show_terrain_bounding_boxes = False
+
+
 def main() -> None:
     app = QApplication(sys.argv)
 
     window = QMainWindow()
-    viewer = TerrainViewer()
+    viewer = TerrainViewer(_CONFIG)
     window.setCentralWidget(viewer)
     window.resize(800, 600)
     window.show()

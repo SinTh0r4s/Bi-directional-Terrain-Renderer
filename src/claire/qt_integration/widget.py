@@ -36,9 +36,9 @@ class TerrainViewer(QOpenGLWidget):
     _engine: Engine
     _overlay_picture: TerrainPicture
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
+    def __init__(self, config: Config, *args: Any, **kwargs: Any) -> None:  # noqa: ANN401
         super().__init__(*args, **kwargs)
-        self._config = Config()
+        self._config = config
         self._camera_control = CameraControl(position=glm.vec3(6945, 3320, 8110), rotation=glm.vec3(0, -30, 164))
         self._timer = QTimer(self)
         self._timer.timeout.connect(self.update)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
