@@ -42,7 +42,10 @@ class TerrainPicture:
 
     @camera.setter
     def camera(self, camera: Camera) -> None:
+        """automatically adjusts resolution/aspect ratio and fov as if camera comes from the rendered overlay"""
         self._camera = camera.copy()
+        if camera.aspect_ratio > self.aspect_ratio:
+            self._camera.fov_deg = self._camera.fov_deg / self.aspect_ratio
         self._camera.resolution.x = self._width
         self._camera.resolution.y = self._height
 

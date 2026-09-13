@@ -32,6 +32,10 @@ class Camera(HasCameraPositionResolutionFovNearplane, HasViewProjMatrices):
         self.near_plane: float = 1
         self.far_plane: float = 25_000
 
+    @property
+    def aspect_ratio(self) -> float:
+        return self.resolution.x / self.resolution.y
+
     def copy(self) -> Camera:
         new_camera = Camera(self.position, self.rotation)
         new_camera.fov_deg = self.fov_deg
@@ -83,6 +87,4 @@ class Camera(HasCameraPositionResolutionFovNearplane, HasViewProjMatrices):
         )
 
     def proj_matrix(self) -> glm.mat4:
-        return glm.perspective(
-            math.radians(self.fov_deg), self.resolution.x / self.resolution.y, self.near_plane, self.far_plane
-        )
+        return glm.perspective(math.radians(self.fov_deg), self.aspect_ratio, self.near_plane, self.far_plane)

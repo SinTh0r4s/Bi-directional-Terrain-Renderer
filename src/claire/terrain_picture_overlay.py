@@ -54,8 +54,8 @@ class TerrainPictureOverlay:
         get_uniform(self._program, "image").value = 0
         get_uniform(self._program, "color_bias").write(config.color_bias.to_bytes())
         get_uniform(self._program, "blend_alpha").value = config.blend_alpha
-        get_uniform(self._program, "image_over_viewport_aspect_ratio").value = picture.aspect_ratio / (
-            camera.resolution.x / camera.resolution.y
+        get_uniform(self._program, "image_over_viewport_aspect_ratio").value = (
+            picture.aspect_ratio / camera.aspect_ratio
         )
         get_uniform(self._program, "is_greyscale").value = picture.is_greyscale
         self._vao.render(mode=moderngl.TRIANGLES)
