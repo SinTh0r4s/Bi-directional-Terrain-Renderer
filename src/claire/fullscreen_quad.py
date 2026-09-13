@@ -38,8 +38,8 @@ class FullscreenQuad:
         self._ibo.release()
         self._program.release()
 
-    def get_uniform(self, name: str) -> moderngl.Uniform:
-        return get_uniform(self._program, name)
+    def get_uniform(self, label: str) -> moderngl.Uniform:
+        return get_uniform(self._program, label)
 
     def render(self) -> None:
         self._vao.render(mode=moderngl.TRIANGLES)
